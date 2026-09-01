@@ -1,0 +1,207 @@
+# Nora Game Show - player cards
+
+195 cards, dealt six to a hand. The 51 host cards are a separate list
+in the same file.
+
+To edit: open `nora-game-show.html`, find `const DECK_ANSWERS`, add or
+remove lines. One card per line. No quotes or commas needed.
+
+## Cards (195)
+
+Alphabetized, ignoring a/an/the.
+
+- A 2-hour doom scroll
+- A 3 PM existential crisis
+- A 400-page PDF
+- A 47-slide presentation
+- 5-7 business days
+- A 7am invite from another time zone
+- Absolutely nothing
+- Aggressive eye contact
+- Aggressive optimism
+- AI slop
+- An AI-generated apology
+- The algorithm
+- All caps in a subject line
+- The audacity
+- Being locked out of the thing I built
+- Being right at the wrong time
+- Being seen typing and then not sending
+- Being the last one to understand the joke
+- A birthday cake that says sorry
+- Blaming the network
+- Brain rot
+- A browser history best left unexplored
+- A bucket of glitter
+- A cake that looks like something else
+- A calendar invite with no agenda
+- Calling a teacher mom
+- A cart with one squeaky wheel
+- Chaos, but beautifully documented
+- Claude confidently making something up
+- Claude explaining something nobody asked about
+- Claude with no adult supervision
+- A comment that says do not touch this
+- A concerning amount of duct tape
+- A concerning lack of supervision
+- The consequences of my actions
+- A cookie tin containing only wrappers
+- Costco
+- A Costco membership
+- CrossFit
+- A dashboard nobody opens
+- A deeply unnecessary pivot table
+- Deleting the wrong row
+- Delulu
+- Deploying on a Friday
+- A developer saying “it works on my machine”
+- Disney adults
+- Doing it properly the second time
+- A dramatic pause
+- An Emotional Support Water Bottle
+- An entire personality built on one certification
+- An entire wheel of cheese
+- Eye contact held two seconds too long
+- A Facebook mom group
+- Files named final_FINAL_v7
+- A firm handshake and nothing else
+- A five-hour board game
+- A folder called New Folder (3)
+- Getting absolutely cooked
+- Getting stuck in a revolving door
+- A Git merge conflict
+- Going viral for all the wrong reasons
+- Golden-doodle owners
+- Gordon Ramsay
+- A group hike nobody enjoyed
+- Guys who peaked in a fraternity
+- An HDMI cable that only works upside down
+- The HOA
+- A hobby I did for two weeks
+- Holding a door open for far too long
+- Hope
+- A hot tub in the wrong place
+- A hotfix for the hotfix
+- Hugging someone who wanted a handshake
+- An if statement nobody dares delete
+- An inbox rule that hid everything
+- Instant coffee at a critical moment
+- Interpretive dance
+- Introducing myself twice to the same person
+- Jeep owners
+- A karaoke machine
+- A laptop at three percent
+- A laptop held together by hope
+- The last chip in the bag
+- The last functioning brain cell
+- A laugh that arrives half a second too late
+- Laughing at the wrong moment
+- A lava lamp
+- A leaf blower at dawn
+- A legally questionable solution
+- Line dancing
+- A little treat
+- A locked room with a fan in it
+- Locking in
+- Losing a shoe at an important moment
+- A macro from 2009
+- Main Character Energy
+- Making it everyone’s problem
+- Martha Stewart
+- A meeting conducted entirely in acronyms
+- A meeting that could have been an email
+- A meeting to schedule the meeting
+- A minor inconvenience that became a personality trait
+- A mug that says World’s Okayest
+- A multi-level marketing scheme
+- My entire personality
+- My grand plans for the weekend
+- A nap, taken professionally
+- Negative aura
+- A neighborhood group chat
+- No thoughts, just vibes
+- Nobody knowing who owns this
+- Nodding as though I understand
+- A notification popping up mid-demo
+- A novelty tie
+- NPC behavior
+- The number seven, for no reason
+- Passive aggression with excellent grammar
+- A password on a sticky note
+- A Peloton leaderboard
+- People who clap when the plane lands
+- People who make air-fryer ownership their personality
+- People who make sourdough their entire personality
+- People who wear matching Patagonia vests
+- The person who never left the meeting
+- Pickleball
+- Pressing Reply instead of Forward
+- Pretending to read the terms
+- A printer error from 2007
+- Pushing a door marked pull
+- A questionable life choice
+- Raw enthusiasm and no skills whatsoever
+- A read receipt
+- Reading the room and ignoring it
+- Realizing it halfway through
+- A recurring meeting nobody can cancel
+- Replying to a text three weeks later
+- Rizz
+- The Roman Empire
+- Room-temperature soup
+- A round of applause for basic competence
+- A rubber duck that has heard everything
+- A sandwich made entirely of chips
+- Saying “you too” at exactly the wrong time
+- Screaming quietly into a mug
+- Screenshots of screenshots
+- Sea shanties
+- A secret third option
+- Sending a voice note by accident
+- A sensible decision, made two years late
+- A shared mailbox nobody owns
+- Sharing the wrong window
+- A side quest
+- A signature that requires wet ink
+- The silence after a question nobody wants to answer
+- Singing the wrong lyrics with total confidence
+- Six full minutes of being on mute
+- A skill issue
+- Small talk in an elevator
+- Snoop Dogg
+- A snow globe of somewhere terrible
+- Somebody else’s problem
+- Someone else’s undocumented script
+- Someone who says “per my last email”
+- Someone’s vacation photos. All of them.
+- A spreadsheet with feelings
+- Standing up to leave and then sitting back down
+- A suspicious amount of mayonnaise
+- A suspiciously specific Google search
+- A suspiciously warm laptop
+- Taylor Swift
+- A Teams message that just says “Hi!”
+- A terrible decision made confidently
+- Test data with real names in it
+- A thumbs-up emoji, weaponized
+- A ticket reopened for the fourth time
+- A TikTok comment section
+- Tom Brady
+- Touching grass
+- Trader Joe’s
+- Tripping and pretending it was on purpose
+- A trophy for something very small
+- Turning it off and on again
+- Twelve people and one decision
+- Two hours of talking around the actual problem
+- An unhealthy amount of aura farming
+- Unresolved childhood trauma
+- Vegans
+- The version of me that answers emails
+- A very intense book club
+- Vibe coding
+- A VPN that only works on Tuesdays
+- Walking confidently in the wrong direction
+- Walmart
+- Waving at someone who was not waving at me
+- “Let’s take this offline.”
