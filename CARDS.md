@@ -3,7 +3,7 @@
 195 cards, dealt six to a hand. The 51 host cards are a separate list
 in the same file.
 
-To edit: open `nora-game-show.html`, find `const DECK_ANSWERS`, add or
+To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
 ## Cards (195)
@@ -63,7 +63,7 @@ Alphabetized, ignoring a/an/the.
 - An entire wheel of cheese
 - Eye contact held two seconds too long
 - A Facebook mom group
-- Files named final_FINAL_v7
+- A file named final_FINAL_v7
 - A firm handshake and nothing else
 - A five-hour board game
 - A folder called New Folder (3)

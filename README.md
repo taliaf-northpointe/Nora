@@ -12,52 +12,13 @@ Nora's avatar — no build step, no dependencies, nothing to install.
 
 ## Setup
 
-### 1. Publish the page
-
 Repo → **Settings** → **Pages** → Source: *Deploy from a branch*, Branch:
 `main`, folder `/ (root)`. Save. A minute later the game is live.
 
-### 2. Make a database for the rooms
-
-Phones and the host screen need somewhere to meet. This is once, ever.
-
-1. https://console.firebase.google.com → create a project. Decline Google
-   Analytics, it isn't needed.
-2. Sidebar: **Build** → **Realtime Database** → **Create Database**. Nearest
-   region, start in **test mode**.
-3. **Rules** tab, paste this, Publish:
-
-   ```json
-   {
-     "rules": {
-       "ngs": {
-         ".read": true,
-         ".write": true
-       }
-     }
-   }
-   ```
-
-4. Note the database name from the top of the page — the part before
-   `.firebaseio.com`, usually `yourproject-default-rtdb`.
-
-No API key, no SDK, no login. The game talks to it over plain HTTPS.
-
-### 3. Type it in once
-
-Open the game, click **Host on this screen**, and put that database name in the
-**Room sync database** box. That's the last time anyone needs to think about
-it: the host screen builds a join link with the database baked into it, and
-that link is what you share from then on. Bookmark it.
-
-If you'd rather bake it into the page instead, set `FIREBASE_URL` near the top
-of the script in `index.html` and the box disappears.
-
-### About those rules
-
-They let anyone who knows the database name read and write under `ngs/`, and
-that name is visible in the join link. Treat the database as public and keep
-nothing else in the project. The rules scope access to the `ngs` branch only.
+That's the whole setup. There is no database and no account: the host's
+browser *is* the room, and phones connect straight to it over a
+browser-to-browser channel (WebRTC — the same thing Teams calls run on). The
+room code doubles as the address, so the code on screen is all anyone needs.
 
 ---
 
@@ -111,13 +72,21 @@ only their own submission and vote.
 Hands live in separate keys rather than inside the shared state, so nobody can
 open dev tools and read the room's cards.
 
-Two interchangeable backends provide those keys, chosen automatically:
-`window.storage` when the game runs inside a Claude artifact, and Firebase over
-REST everywhere else. The game logic doesn't know which is in use, so the same
-file works in both places.
+Three interchangeable backends provide those keys, chosen automatically:
+`window.storage` when the game runs inside a Claude artifact; a direct
+browser-to-browser connection (WebRTC via PeerJS) everywhere else, where the
+host's browser holds the keys and players' reads and writes travel over the
+data channel; and, only if you pass `?db=your-database` in the URL or set
+`FIREBASE_URL` in the script, a Firebase Realtime Database over REST. The game
+logic doesn't know which is in use, so the same file works in all three places.
 
-The QR code is drawn by a small library loaded from a CDN. If that's blocked,
-the QR is skipped and the printed join link still works.
+Browser-to-browser mode uses PeerJS's free public broker once, to introduce
+each phone to the host; after the handshake, game traffic flows directly
+between the devices. If the host closes their tab, the room is gone — open a
+new one.
+
+The QR code and the connection library are loaded from a CDN. If the CDN is
+blocked, the QR is skipped and the printed join link still works.
 
 Comfortable up to about a dozen players. Past that the host's polling interval
 stretches automatically and it'll feel slower.

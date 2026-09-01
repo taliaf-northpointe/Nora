@@ -331,7 +331,7 @@
         </div>
         <p class="now-serving">Now serving</p>
         <h1 id="door-h1">The whole queue, all at once.</h1>
-        <p class="lede">A fill-in-the-blank card game for the team. One person hosts on the big screen, everyone else plays from their phone. Nora reads it all out loud.</p>
+        <p class="lede">A fill-in-the-blank card game for the team. One person hosts on the big screen, everyone else plays from their own phone or laptop. Nora reads it all out loud.</p>
         <div class="door-choices">
           <button class="btn big" id="go-host">Host on this screen</button>
           <button class="btn big ghost" id="go-join">Join a game</button>
@@ -375,9 +375,6 @@
           </label>
           <button class="btn ghost small" id="test-voice">Hear her</button>
         </div>
-        <label class="field hide" id="db-row"><span>Room sync database (one time, then it lives in the link)</span>
-          <input type="text" id="set-db" placeholder="your-project-default-rtdb" autocomplete="off" spellcheck="false">
-        </label>
         <button class="btn big wide" id="open-room">Open the room</button>
         <p class="tip" id="setup-tip">Everyone joins by opening this same link on their own device and tapping Join a game.</p>
       </div>
@@ -565,7 +562,7 @@ An entire personality built on one certification
 An entire wheel of cheese
 Eye contact held two seconds too long
 A Facebook mom group
-Files named final_FINAL_v7
+A file named final_FINAL_v7
 A firm handshake and nothing else
 A five-hour board game
 A folder called New Folder (3)
@@ -729,23 +726,25 @@ function show(id){ SCREENS.forEach(s => $(s).classList.toggle('hide', s !== id))
 /* ============================================================
    ROOM SYNC
    The room is a handful of shared keys the host writes and the
-   players poll. Two backends provide those keys:
+   players poll. Three backends provide those keys:
 
      claude   - window.storage, only exists inside a Claude
                 artifact. Picked automatically when available.
-     firebase - a Firebase Realtime Database over plain REST.
-                Needed for GitHub Pages. Paste your database
-                URL below and it takes over.
+     rtc      - the default everywhere else. The host browser IS
+                the room: phones open a direct browser-to-browser
+                connection to it (WebRTC via PeerJS). The room
+                code doubles as the address, so there is nothing
+                to sign up for and nothing to configure.
+     firebase - optional. A Firebase Realtime Database over plain
+                REST, only used if a database is named below or
+                with ?db= in the URL.
 
    Nothing else in the game knows which one is in use.
    ============================================================ */
 
-/* The database can be set three ways, in this order of preference:
-     1. ?db=your-project-default-rtdb in the page URL  (nothing to edit)
-     2. typed into the box on the host setup screen
-     3. hardcoded here, if you would rather bake it in
-   The host screen builds the join link for you, database included, so
-   players never see or type any of this. */
+/* Optional override: name a Firebase database here (or pass
+   ?db=your-project-default-rtdb in the URL) and it replaces the
+   browser-to-browser sync. Leave blank for zero-setup. */
 const FIREBASE_URL = "";
 
 const QS = (function(){
@@ -814,17 +813,127 @@ const FirebaseBackend = {
   }
 };
 
+/* Browser-to-browser rooms. The host claims the peer id derived from
+   the room code on PeerJS's free public broker; players connect to
+   that id with nothing but the code. The host keeps the only copy of
+   the shared keys, so its set/get/list are plain object access, and a
+   player's calls become tiny request/reply messages over the data
+   channel. */
+const RtcBackend = {
+  name: 'rtc',
+  peer: null, isHost: false, store: {},
+  conn: null, connCode: '', seq: 0, pending: {}, dead: false, _lib: null, _joining: null,
+  lib(){
+    if(window.Peer) return Promise.resolve();
+    if(!this._lib){
+      this._lib = new Promise((res, rej) => {
+        const sc = document.createElement('script');
+        sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js';
+        sc.onload = () => res();
+        sc.onerror = () => { this._lib = null; rej(new Error('peerjs blocked')); };
+        document.head.appendChild(sc);
+      });
+    }
+    return this._lib;
+  },
+  idFor(code){ return 'nora-ngs-' + String(code).toLowerCase(); },
+  codeOf(key){ return String(key).split(':')[1] || ''; },
+
+  /* ---- host side ---- */
+  hostRoom(code){
+    return this.lib().then(() => new Promise((res, rej) => {
+      const p = new Peer(this.idFor(code));
+      let settled = false;
+      const fail = e => { if(settled) return; settled = true; try{ p.destroy(); }catch(_){} rej(e || new Error('no broker')); };
+      p.on('error', fail);
+      p.on('open', () => {
+        if(settled) return; settled = true;
+        this.peer = p; this.isHost = true; this.store = {};
+        p.on('connection', c => {
+          c.on('data', m => {
+            if(!m || m.q == null) return;
+            let value = null;
+            if(m.op === 'set'){ this.store[m.k] = m.v; }
+            else if(m.op === 'get'){ value = (m.k in this.store) ? this.store[m.k] : null; }
+            else if(m.op === 'list'){ value = Object.keys(this.store).filter(k => k.indexOf(m.p) === 0); }
+            else if(m.op === 'del'){ delete this.store[m.k]; }
+            try { c.send({a: m.q, value: value}); } catch(e){}
+          });
+        });
+        res(true);
+      });
+      setTimeout(() => fail(new Error('timeout')), 9000);
+    }));
+  },
+  closeRoom(){
+    if(this.peer){ try { this.peer.destroy(); } catch(e){} }
+    this.peer = null; this.isHost = false; this.store = {};
+  },
+
+  /* ---- player side ---- */
+  joinRoom(code){
+    if(this.isHost) return Promise.resolve(null);
+    if(this._joining && this.connCode === code && !this.dead) return this._joining;
+    this.connCode = code; this.dead = false;
+    this._joining = this.lib().then(() => new Promise((res, rej) => {
+      const p = new Peer();
+      let settled = false;
+      const fail = e => {
+        if(settled) return; settled = true;
+        this._joining = null; this.conn = null;
+        try { p.destroy(); } catch(_){}
+        rej(e || new Error('no route'));
+      };
+      p.on('error', fail);
+      p.on('open', () => {
+        const c = p.connect(this.idFor(code), {reliable: true});
+        c.on('error', fail);
+        c.on('close', () => { this.dead = true; this.conn = null; this._joining = null; });
+        c.on('open', () => {
+          if(settled) return; settled = true;
+          this.peer = p; this.conn = c;
+          c.on('data', m => {
+            if(m && m.a != null && this.pending[m.a]){ const f = this.pending[m.a]; delete this.pending[m.a]; f(m.value); }
+          });
+          res(c);
+        });
+      });
+      setTimeout(() => fail(new Error('timeout')), 9000);
+    }));
+    return this._joining;
+  },
+  request(code, msg){
+    return this.joinRoom(code).then(conn => new Promise((res, rej) => {
+      const id = ++this.seq;
+      msg.q = id;
+      this.pending[id] = res;
+      try { conn.send(msg); } catch(e){ delete this.pending[id]; return rej(e); }
+      setTimeout(() => { if(this.pending[id]){ delete this.pending[id]; rej(new Error('timeout')); } }, 5000);
+    }));
+  },
+
+  async set(k, v){
+    if(this.isHost){ this.store[k] = v; return true; }
+    return this.request(this.codeOf(k), {op:'set', k:k, v:v});
+  },
+  async get(k){
+    if(this.isHost) return (k in this.store) ? this.store[k] : null;
+    return this.request(this.codeOf(k), {op:'get', k:k});
+  },
+  async list(prefix){
+    if(this.isHost) return Object.keys(this.store).filter(k => k.indexOf(prefix) === 0);
+    return this.request(this.codeOf(prefix), {op:'list', p:prefix});
+  },
+  async del(k){
+    if(this.isHost){ delete this.store[k]; return true; }
+    return this.request(this.codeOf(k), {op:'del', k:k});
+  }
+};
+
 let Backend = (window.storage && window.storage.get)
   ? ClaudeBackend
-  : (DB_URL ? FirebaseBackend : null);
-let hasStore = !!Backend;
-function useDatabase(v){
-  DB_URL = normalizeDb(v);
-  if(!DB_URL) return false;
-  Backend = (window.storage && window.storage.get) ? ClaudeBackend : FirebaseBackend;
-  hasStore = true;
-  return true;
-}
+  : (DB_URL ? FirebaseBackend : RtcBackend);
+let hasStore = true;
 
 async function put(key, obj){ return Backend.set(key, obj); }
 async function pull(key){
@@ -878,9 +987,7 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 const fill_ = (t, map) => t.replace(/\{(\w+)\}/g, (m, k) => map[k]);
 const NORA = {
   hello: [
-    "I'm Nora. Normally I answer tickets. Today I read cards out loud. Code's on screen.",
-    "Nora here. Same voice, different job. Join with the code on screen.",
-    "Right. Code's up, phones out. I'll do the reading."
+    "It's Nora, your helpful Service Desk Assistant. Today, though, I'm your game show host. Here's how it works: I read out a sentence with a blank in it, everyone picks a card to fill in that blank, and then everyone votes on the best one. Grab the code on screen and join in."
   ],
   welcome: ["{n}, hello.", "{n} is in.", "That's {n}.", "Welcome, {n}.", "{n}. Brave."],
   round: [
@@ -1028,8 +1135,30 @@ const Host = {
   subs:[], owners:[], revealed:0, tally:{}, winner:null,
   seen:{}, timer:null, interval:2200, busy:false, banner:'', qrData:null,
 
+  makeCode(){
+    return Array.from({length:4}, () => CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
+  },
+
   async open(){
-    this.code = Array.from({length:4}, () => CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
+    // browser-to-browser mode claims the room's address up front, so a
+    // failure can still be shown on the setup screen
+    if(Backend.hostRoom){
+      let claimed = '';
+      for(let t = 0; t < 3 && !claimed; t++){
+        const code = this.makeCode();
+        try { await Backend.hostRoom(code); claimed = code; }
+        catch(e){ Backend.closeRoom(); }
+      }
+      if(!claimed){
+        const note = $('setup-tip');
+        note.textContent = 'Could not open a room. The network may be blocking the connection service - try again, or another network.';
+        note.style.color = '#fbe6c8';
+        return;
+      }
+      this.code = claimed;
+    } else {
+      this.code = this.makeCode();
+    }
     this.sid = String(Date.now()).slice(-7);
     this.pile = shuffle(ANSWERS.slice());
     this.promptPool = shuffle(PROMPTS.slice());
@@ -1288,6 +1417,7 @@ const Host = {
       const keys = await listKeys('ngs:' + this.code + ':');
       if(keys) for(const k of keys) await drop(k);
     }
+    if(Backend.closeRoom) Backend.closeRoom();
     show('scr-door');
   },
 
@@ -1329,7 +1459,8 @@ const Host = {
   centerHTML(){
     const adv = (label, on) => on ? '<button class="btn big" id="stage-adv">' + label + '</button>' : '';
     if(this.phase === 'LOBBY'){
-      const web = Backend && Backend.name === 'firebase';
+      // any backend with a real page URL can share a join link and QR
+      const web = Backend && Backend.name !== 'claude';
       let panel;
       if(web){
         const link = joinLink(this.code);
@@ -1338,11 +1469,11 @@ const Host = {
           + '<div class="qr">' + (this.qrData
               ? '<img src="' + this.qrData + '" alt="Join by scanning">'
               : '<div style="width:200px;height:200px"></div>') + '</div>'
-          + '<div class="joinurl"><b>Point a phone camera here</b>'
-          + 'or open <code>' + esc(link.replace(/^https?:\/\//, '')) + '</code> '
-          + 'and enter the code. No sign-in, no app.</div></div>';
+          + '<div class="joinurl"><b>Scan with a phone, or open on any device</b>'
+          + 'go to <code>' + esc(link.replace(/^https?:\/\//, '')) + '</code> '
+          + 'and enter the code. Phone or laptop, no sign-in, no app.</div></div>';
       } else {
-        panel = '<p class="sub">Open this same link on your phone, tap Join a game, and enter the code.</p>';
+        panel = '<p class="sub">Open this same link on your phone or laptop, tap Join a game, and enter the code.</p>';
       }
       return '<div class="joincode">'
         + '<span class="avwrap live"><span class="nora-av xl"></span></span>'
@@ -1499,7 +1630,7 @@ const Player = {
         return;
       }
       body.innerHTML = '<div class="pv-prompt">' + promptHTML(s.prompt) + '</div>'
-        + '<p class="pv-instruction">Pick the card you want Nora to read out.</p>'
+        + '<p class="pv-instruction">Pick a card to fill in the blank.</p>'
         + '<div class="hand">' + this.hand.map((c,i) =>
             '<button data-card="' + i + '" class="' + (this.sel === i ? 'sel' : '') + '">' + esc(c) + '</button>'
           ).join('') + '</div>';
@@ -1514,9 +1645,14 @@ const Player = {
       return;
     }
     if(s.phase === 'REVEAL'){
+      const subs = s.subs || [];
+      const revealed = s.revealed || 0;
+      const cards = subs.slice(0, revealed).map((x,i) =>
+        '<div class="answer-card">' + (i+1) + '. ' + esc(x.card) + '</div>'
+      ).join('');
       body.innerHTML = '<div class="pv-prompt">' + promptHTML(s.prompt) + '</div>'
-        + '<div class="waiting"><span class="pulse"></span><h2>Nora is reading.</h2>'
-        + '<p>Listen to the shared screen. Voting opens when she is done.</p></div>';
+        + '<p class="pv-instruction">Nora is reading the cards out. Voting opens when she is done.</p>'
+        + '<div class="hand">' + cards + '</div>';
       return;
     }
     if(s.phase === 'VOTE'){
@@ -1562,11 +1698,6 @@ const Player = {
 $('go-host').onclick = () => {
   show('scr-hostsetup');
   Voice.loadVoices($('set-voice'));
-  // the database box only matters outside a Claude artifact
-  if(!(window.storage && window.storage.get)){
-    $('db-row').classList.remove('hide');
-    if(DB_URL) $('set-db').value = shortDb(DB_URL);
-  }
 };
 $('go-join').onclick = () => show('scr-join');
 
@@ -1578,16 +1709,6 @@ $('test-voice').onclick = () => Voice.say(pick([
   "Hello. I'll be reading the cards."
 ]));
 $('open-room').onclick = () => {
-  if(!(window.storage && window.storage.get)){
-    const typed = $('set-db').value.trim();
-    if(typed) useDatabase(typed);
-    if(!hasStore){
-      $('setup-tip').textContent = 'Add your Firebase database name above so phones have somewhere to meet. The README has the five-minute setup.';
-      $('setup-tip').style.color = '#fbe6c8';
-      $('set-db').focus();
-      return;
-    }
-  }
   Host.target = parseInt($('set-target').value, 10) || 5;
   Voice.rate = parseFloat($('set-rate').value) || 1;
   Voice.setVoice($('set-voice').value);
@@ -1613,7 +1734,6 @@ $('do-join').onclick = async () => {
   err.classList.add('hide');
   if(code.length !== 4){ err.textContent = 'The room code is four characters.'; err.classList.remove('hide'); return; }
   if(!name){ err.textContent = 'Add a name so the room knows who played what.'; err.classList.remove('hide'); return; }
-  if(!hasStore){ err.textContent = 'This copy of the game has no room sync configured, so it cannot join. Ask the host for the published link.'; err.classList.remove('hide'); return; }
   $('do-join').disabled = true;
   const problem = await Player.join(code, name);
   $('do-join').disabled = false;
@@ -1633,10 +1753,7 @@ $('join-name').onkeydown = e => { if(e.key === 'Enter') $('do-join').click(); };
 
 (function(){
   const tip = $('door-tip');
-  if(!hasStore){
-    tip.textContent = 'No room sync configured, so nobody can join yet. Open index.html and paste your Firebase database URL into FIREBASE_URL near the top of the script.';
-    tip.style.color = '#fbe6c8';
-  } else if(!Voice.ready()){
+  if(!Voice.ready()){
     tip.textContent = 'This browser has no speech built in, so Nora will be silent. Everything else still works.';
   } else {
     tip.textContent = PROMPTS.length + ' prompts and ' + ANSWERS.length + ' answer cards loaded.';
