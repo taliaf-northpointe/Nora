@@ -1296,6 +1296,8 @@ const Host = {
   async startGame(){
     if(this.players.length < 2){ return; }
     this.maxRounds = parseInt($('set-target').value, 10) || 30;
+    // fresh random order of prompts every game
+    this.promptPool = shuffle(PROMPTS.slice());
     await this.nextRound(true);
   },
 
