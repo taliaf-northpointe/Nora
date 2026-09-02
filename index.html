@@ -1052,6 +1052,7 @@ const NORA = {
 /* ---------- Nora's voice ---------- */
 const Voice = {
   on: true, rate: 1, voice: null, queue: [], speaking: false, done: null,
+  userChose: false, chosenName: '', _voicesHooked: false,
   ready(){ return typeof speechSynthesis !== 'undefined'; },
   mark(on){
     this.speaking = !!on;
@@ -1093,9 +1094,12 @@ const Voice = {
         group('Other English voices', rest) +
         '<option value="">Browser default</option>';
       const best = sorted[0];
-      if(best){ sel.value = best.name; this.voice = best; }
+      // a re-fill (voices loading in late) must not stomp a manual choice
+      const selName = this.userChose ? this.chosenName : (best ? best.name : '');
+      sel.value = selName;
+      this.setVoice(selName);
       const note = document.getElementById('setup-tip');
-      if(note){
+      if(note && !this.userChose){
         const isAva = /\bava\b/i.test(best.name);
         if(isAva) note.textContent = 'Nora is using Ava. She streams from Microsoft, so she needs an internet connection to speak.';
         else if(picked.length) note.textContent = 'Nora is using ' + best.name + '. Ava only appears in Microsoft Edge, so host there if you want her.';
@@ -1104,11 +1108,18 @@ const Voice = {
       }
     };
     fill();
-    speechSynthesis.addEventListener('voiceschanged', fill);
+    // hook once, or a fresh listener piles up on every call and re-runs fill()
+    if(!this._voicesHooked){ this._voicesHooked = true; speechSynthesis.addEventListener('voiceschanged', fill); }
   },
   setVoice(name){
     if(!this.ready()) return;
     this.voice = speechSynthesis.getVoices().find(v => v.name === name) || null;
+  },
+  chooseVoice(name){
+    // a deliberate pick from the dropdown; remembered across voice reloads
+    this.userChose = true;
+    this.chosenName = name || '';
+    this.setVoice(name);
   },
   say(text, onEnd){
     this.done = onEnd || null;
@@ -1773,7 +1784,7 @@ $('go-host').onclick = () => {
 };
 $('go-join').onclick = () => show('scr-join');
 
-$('set-voice').onchange = e => Voice.setVoice(e.target.value);
+$('set-voice').onchange = e => Voice.chooseVoice(e.target.value);
 $('set-rate').onchange = e => Voice.rate = parseFloat(e.target.value);
 $('test-voice').onclick = () => Voice.say(pick([
   "This is what I sound like. Round one starts when you're ready.",
@@ -1783,7 +1794,8 @@ $('test-voice').onclick = () => Voice.say(pick([
 $('open-room').onclick = () => {
   Host.maxRounds = parseInt($('set-target').value, 10) || 30;
   Voice.rate = parseFloat($('set-rate').value) || 1;
-  Voice.setVoice($('set-voice').value);
+  // lock in whatever the dropdown shows as a deliberate pick for the game
+  Voice.chooseVoice($('set-voice').value);
   Host.open();
 };
 
