@@ -1083,7 +1083,7 @@ const NORA = {
 /* ---------- Nora's voice ---------- */
 const Voice = {
   on: true, rate: 1, voice: null, queue: [], speaking: false, done: null,
-  userChose: false, chosenName: '', _voicesHooked: false,
+  userChose: false, chosenName: '', _voicesHooked: false, _preTimer: null,
   ready(){ return typeof speechSynthesis !== 'undefined'; },
   mark(on){
     this.speaking = !!on;
@@ -1152,34 +1152,67 @@ const Voice = {
     this.chosenName = name || '';
     this.setVoice(name);
   },
-  say(text, onEnd){
+  /* per-line delivery. The browser API only gives us pitch, rate and a
+     pre-pause to work with, so this is light seasoning, not real emotion:
+     a lift on questions, a brighter/faster read on a win, a beat before a
+     reveal, and small random wobble so back-to-back reads aren't identical. */
+  prosody(text, tone){
+    const T = {
+      hello:   {p: 0.02, r: 1.00},
+      welcome: {p: 0.06, r: 1.02},
+      prompt:  {p: 0.00, r: 0.99},
+      closed:  {p: 0.00, r: 1.00},
+      reveal:  {p: (Math.random()*0.10 - 0.05), r: 1 + (Math.random()*0.08 - 0.04), pre: 260},
+      vote:    {p: 0.04, r: 1.00},
+      win:     {p: 0.09, r: 1.05, pre: 340},
+      over:    {p: 0.06, r: 1.02},
+      aside:   {p: -0.06, r: 0.95}
+    };
+    const b = T[tone] || {};
+    let pitchAdd = b.p || 0, rateMul = b.r || 1, pre = b.pre || 0;
+    // question lifts, exclamation brightens — the deck puts ? / ! mid-line
+    // (the blank follows), so look anywhere, not just at the end
+    if(text.indexOf('?') > -1) pitchAdd += 0.05;
+    else if(text.indexOf('!') > -1){ pitchAdd += 0.06; rateMul *= 1.03; }
+    return {pitchAdd: pitchAdd, rateMul: rateMul, pre: pre};
+  },
+  say(text, onEnd, tone){
+    clearTimeout(this._preTimer);
     this.done = onEnd || null;
     this.mark(true);
+    const pr = this.prosody(text, tone);
     if(!this.on || !this.ready()){
       const f = this.done; this.done = null;
-      const ms = Math.min(2600, 420 + text.length * 42);
+      const ms = pr.pre + Math.min(2600, 420 + text.length * 42);
       setTimeout(() => { this.mark(false); if(f) f(); }, ms);
       return;
     }
     try { speechSynthesis.cancel(); } catch(e){}
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = this.rate; u.pitch = 1.04; u.volume = 1;
-    if(this.voice) u.voice = this.voice;
-    let fired = false;
-    const finish = () => { if(fired) return; fired = true; this.mark(false); const f = this.done; this.done = null; if(f) f(); };
-    u.onend = finish;
-    u.onerror = finish;
-    // safety net: some browsers drop onend on long strings
-    const guard = setTimeout(finish, 1200 + text.length * 95);
-    u.onend = () => { clearTimeout(guard); finish(); };
-    speechSynthesis.speak(u);
+    const speak = () => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = Math.max(0.5, Math.min(2, this.rate * pr.rateMul));
+      u.pitch = Math.max(0, Math.min(2, 1.04 + pr.pitchAdd));
+      u.volume = 1;
+      if(this.voice) u.voice = this.voice;
+      let fired = false;
+      const finish = () => { if(fired) return; fired = true; this.mark(false); const f = this.done; this.done = null; if(f) f(); };
+      u.onerror = finish;
+      // safety net: some browsers drop onend on long strings
+      const guard = setTimeout(finish, 1200 + text.length * 95);
+      u.onend = () => { clearTimeout(guard); finish(); };
+      speechSynthesis.speak(u);
+    };
+    if(pr.pre > 0) this._preTimer = setTimeout(speak, pr.pre);
+    else speak();
   },
   skip(){
+    clearTimeout(this._preTimer);
     if(this.ready()){ try { speechSynthesis.cancel(); } catch(e){} }
     this.mark(false);
     const f = this.done; this.done = null; if(f) f();
   },
   hush(){
+    clearTimeout(this._preTimer);
     if(this.ready()){ try { speechSynthesis.cancel(); } catch(e){} }
     this.mark(false); this.done = null;
   }
@@ -1194,9 +1227,17 @@ function promptHTML(text, fill){
   // straight question, no blank: the answer lands after it
   return esc(text) + (fill ? ' <br>' + blank : '');
 }
+/* respellings that only affect how Nora SAYS a line, never what's shown.
+   e.g. the "Live, laugh, love" meme is the verb ("liv"), not rhyme-with-hive. */
+const SPEAK_FIXES = [
+  [/\bLive(?=,\s*laugh)/gi, 'Liv']
+];
+function speakFix(s){ SPEAK_FIXES.forEach(function(f){ s = s.replace(f[0], f[1]); }); return s; }
 function promptSpoken(text, fill){
-  if(hasBlank(text)) return text.replace('___', fill ? fill : 'blank');
-  return fill ? text.replace(/\s*$/, '') + ' ' + fill : text;
+  const s = hasBlank(text)
+    ? text.replace('___', fill ? fill : 'blank')
+    : (fill ? text.replace(/\s*$/, '') + ' ' + fill : text);
+  return speakFix(s);
 }
 
 /* ============================================================
@@ -1240,7 +1281,7 @@ const Host = {
     show('scr-stage');
     await this.push();
     this.render();
-    Voice.say(pick(NORA.hello));
+    Voice.say(pick(NORA.hello), null, 'hello');
     this.loop();
   },
 
@@ -1325,7 +1366,7 @@ const Host = {
       if(this.phase === 'LOBBY' && added.length <= 2){
         Voice.say(added.length === 1
           ? fill_(pick(NORA.welcome), {n:added[0]})
-          : added.join(' and ') + ', hello.');
+          : added.join(' and ') + ', hello.', null, 'welcome');
       }
     }
 
@@ -1392,7 +1433,7 @@ const Host = {
         p.card = this.hands[p.id].splice(Math.floor(Math.random()*this.hands[p.id].length), 1)[0];
       });
       this.render();
-    });
+    }, 'prompt');
   },
 
   async closeSubmissions(){
@@ -1417,7 +1458,7 @@ const Host = {
     this.phase = 'REVEAL'; this.revealed = 0;
     await this.push();
     this.render();
-    Voice.say(pick(NORA.closed), () => this.revealNext());
+    Voice.say(pick(NORA.closed), () => this.revealNext(), 'closed');
   },
 
   revealNext(){
@@ -1426,7 +1467,7 @@ const Host = {
       this.phase = 'VOTE';
       this.push();
       this.render();
-      Voice.say(pick(NORA.vote));
+      Voice.say(pick(NORA.vote), null, 'vote');
       // sims vote
       this.players.filter(p => p.sim).forEach(p => {
         const mine = this.owners.findIndex(o => o.pid === p.id);
@@ -1440,7 +1481,7 @@ const Host = {
     this.render();
     const n = idx + 1;
     const aside = Math.random() < 0.18 ? ' ' + pick(NORA.aside) : '';
-    Voice.say('Number ' + n + '. ' + promptSpoken(this.prompt, this.subs[idx].card) + aside, () => this.revealNext());
+    Voice.say('Number ' + n + '. ' + promptSpoken(this.prompt, this.subs[idx].card) + aside, () => this.revealNext(), 'reveal');
   },
 
   async closeVoting(){
@@ -1478,9 +1519,9 @@ const Host = {
         this.phase = 'GAMEOVER'; this.push(); this.render();
         // the game ends on round count, so the champion is the top scorer overall
         const champ = this.players.slice().sort((a,b) => b.score - a.score)[0];
-        Voice.say(fill_(pick(NORA.over), {n:champ ? champ.name : owner.name, s:champ ? champ.score : winner.score}));
+        Voice.say(fill_(pick(NORA.over), {n:champ ? champ.name : owner.name, s:champ ? champ.score : winner.score}), null, 'over');
       }
-    });
+    }, 'win');
   },
 
   async addSim(){
