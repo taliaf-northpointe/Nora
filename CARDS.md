@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-220 cards, dealt six to a hand. The 57 host cards are a separate list
+233 cards, dealt six to a hand. The 57 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (220)
+## Cards (233)
 
 Alphabetized, ignoring a/an/the.
 
@@ -23,6 +23,7 @@ Alphabetized, ignoring a/an/the.
 - An AI-generated apology
 - The algorithm
 - All caps in a subject line
+- Astrology girls
 - The audacity
 - Being locked out of the thing I built
 - Being right at the wrong time
@@ -68,6 +69,7 @@ Alphabetized, ignoring a/an/the.
 - Eating shredded cheese over the sink
 - An Emotional Support Water Bottle
 - An entire personality built on one certification
+- The entire state of Florida
 - An entire wheel of cheese
 - Eye contact held two seconds too long
 - A Facebook mom group
@@ -84,6 +86,7 @@ Alphabetized, ignoring a/an/the.
 - Golden-doodle owners
 - Googling symptoms
 - Gordon Ramsay
+- Grandma’s casserole
 - A group hike nobody enjoyed
 - The guy who won’t stop explaining crypto
 - Guys who peaked in a fraternity
@@ -92,6 +95,7 @@ Alphabetized, ignoring a/an/the.
 - A hobby I did for two weeks
 - Holding a door open for far too long
 - Hope
+- A Hot Topic
 - A hot tub in the wrong place
 - A hotfix for the hotfix
 - Hugging someone who wanted a handshake
@@ -113,6 +117,7 @@ Alphabetized, ignoring a/an/the.
 - A legally questionable solution
 - Letting the intrusive thoughts win
 - Line dancing
+- LinkedIn influencers
 - A little treat
 - A locked room with a fan in it
 - Locking in
@@ -126,16 +131,19 @@ Alphabetized, ignoring a/an/the.
 - A meeting that could have been an email
 - A meeting to schedule the meeting
 - A minor inconvenience that became a personality trait
+- Mr. Beast
 - A mug that says World’s Okayest
 - A multi-level marketing scheme
 - My entire personality
 - My grand plans for the weekend
+- My last nerve
 - A nap, taken professionally
 - Negative aura
 - A neighborhood group chat
 - No thoughts, just vibes
 - Nobody knowing who owns this
 - Nodding as though I understand
+- A notification from your Apple Watch telling you it’s time to stand up
 - A notification popping up mid-demo
 - A novelty tie
 - NPC behavior
@@ -151,11 +159,13 @@ Alphabetized, ignoring a/an/the.
 - The person who doesn’t return the shopping cart
 - The person who never left the meeting
 - Pickleball
+- A playground
 - Pressing Reply instead of Forward
 - Pretending to read the terms
 - A printer error from 2007
 - Pushing a door marked pull
 - A questionable life choice
+- Rage bait
 - Raw enthusiasm and no skills whatsoever
 - A read receipt
 - Reading the room and ignoring it
@@ -166,6 +176,7 @@ Alphabetized, ignoring a/an/the.
 - Rizz
 - The Roman Empire
 - Room-temperature soup
+- A rotisserie chicken
 - A round of applause for basic competence
 - A rubber duck that has heard everything
 - A sandwich made entirely of chips
@@ -208,6 +219,7 @@ Alphabetized, ignoring a/an/the.
 - A thumbs-up emoji, weaponized
 - A ticket reopened for the fourth time
 - A TikTok comment section
+- The Titanic
 - Tom Brady
 - Touching grass
 - Trader Joe’s
@@ -229,4 +241,5 @@ Alphabetized, ignoring a/an/the.
 - Watching documentaries about extremely specific topics
 - Waving at someone who was not waving at me
 - Wearing socks with sandals
+- A “Get Ready With Me” TikTok
 - “Let’s take this offline.”
