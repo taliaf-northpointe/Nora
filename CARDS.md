@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-249 cards, dealt six to a hand. The 60 host cards are a separate list
+247 cards, dealt six to a hand. The 60 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (249)
+## Cards (247)
 
 Alphabetized, ignoring a/an/the.
 
@@ -52,7 +52,6 @@ Alphabetized, ignoring a/an/the.
 - The consequences of my actions
 - A cookie tin containing only wrappers
 - Costco
-- A Costco membership
 - A Costco-sized jar of pickles
 - Creating an automated solution to a problem that would have taken 30 seconds to fix manually
 - CrossFit
@@ -239,7 +238,6 @@ Alphabetized, ignoring a/an/the.
 - Touching grass
 - Trader Joe’s
 - Tripping and pretending it was on purpose
-- A trophy for something very small
 - Turning it off and on again
 - Twelve people and one decision
 - Two hours of talking around the actual problem
