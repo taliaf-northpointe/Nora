@@ -1091,9 +1091,12 @@ const Voice = {
   },
   loadVoices(sel){
     if(!this.ready()) return;
-    /* First match wins. Edge exposes these as "Microsoft Ava Online (Natural)" and friends. */
-    const WANTED = [/\bava\b/i, /\bemma\b/i, /\bsonia\b/i, /\bnatasha\b/i, /\blibby\b/i, /\bmaisie\b/i];
-    const WOMEN = /karen|catherine|serena|kate|stephanie|hazel|susan|fiona|moira|libby|sonia|maisie|natasha|olivia|amy|emily|matilda|ava|emma|aria|jenny|michelle|clara|female|woman/i;
+    /* First match wins, so order = preference. Edge exposes Ava & friends
+       as "Microsoft Ava Online (Natural)"; Chrome exposes female Google
+       voices ("Google US English", "Google UK English Female"). */
+    const WANTED = [/\bava\b/i, /\bemma\b/i, /\bsonia\b/i, /\bnatasha\b/i, /\blibby\b/i, /\bmaisie\b/i,
+                    /google uk english female/i, /google us english/i];
+    const WOMEN = /karen|catherine|serena|kate|stephanie|hazel|susan|fiona|moira|libby|sonia|maisie|natasha|olivia|amy|emily|matilda|ava|emma|aria|jenny|michelle|clara|google us english|female|woman/i;
     const MEN = /male|man|daniel|lee|james|george|oliver|ryan|thomas|arthur|russell|gordon|william|andrew|brian|christopher|guy/i;
     const fill = () => {
       const all = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().indexOf('en') === 0);
@@ -1133,9 +1136,9 @@ const Voice = {
       if(note && !this.userChose){
         const isAva = /\bava\b/i.test(best.name);
         if(isAva) note.textContent = '';
-        else if(picked.length) note.textContent = 'Nora is using ' + best.name + '. Ava only appears in Microsoft Edge, so host there if you want her.';
-        else if(accented.length) note.textContent = 'Nora is using ' + best.name + '. Ava is an Edge-only voice, so host in Microsoft Edge to get her.';
-        else note.textContent = 'No Ava and no British or Australian voice on this browser. Host in Microsoft Edge and Nora will find her.';
+        else if(picked.length) note.textContent = 'Nora is using ' + best.name + '.';
+        else if(accented.length) note.textContent = 'Nora is using ' + best.name + '. For a warmer voice, host in Microsoft Edge (Ava) or Chrome (Google).';
+        else note.textContent = 'This browser only has basic voices. Host in Microsoft Edge or Google Chrome for a nicer one.';
       }
     };
     fill();
