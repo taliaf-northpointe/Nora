@@ -1,18 +1,17 @@
 # Nora Game Show - player cards
 
-247 cards, dealt six to a hand. The 60 host cards are a separate list
+223 cards, dealt six to a hand. The 60 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (247)
+## Cards (223)
 
 Alphabetized, ignoring a/an/the.
 
 - A 2-hour doom scroll
 - A 3 PM existential crisis
-- A 400-page PDF
 - A 47-slide presentation
 - 5-7 business days
 - A 7am invite from another time zone
@@ -22,9 +21,9 @@ Alphabetized, ignoring a/an/the.
 - AI slop
 - An AI-generated apology
 - The algorithm
-- All caps in a subject line
 - Astrology girls
 - The audacity
+- Aura Farming
 - Bad financial decisions
 - Being locked out of the thing I built
 - Being right at the wrong time
@@ -39,7 +38,7 @@ Alphabetized, ignoring a/an/the.
 - Buying something I don’t need because I’m actually losing money if I don’t buy it on sale
 - A cake that looks like something else
 - A calendar invite with no agenda
-- Calling a teacher mom
+- Calling the teacher mom
 - A cart with one squeaky wheel
 - Chaos, but beautifully documented
 - Claude confidently making something up
@@ -72,14 +71,11 @@ Alphabetized, ignoring a/an/the.
 - An Emotional Support Water Bottle
 - An entire personality built on one certification
 - The entire state of Florida
-- An entire wheel of cheese
 - Eye contact held two seconds too long
 - A Facebook mom group
 - False confidence
 - A file named final_FINAL_v7
 - A firm handshake and nothing else
-- A five-hour board game
-- A folder called New Folder (3)
 - Gardening
 - Generational trauma
 - Getting absolutely cooked
@@ -107,30 +103,21 @@ Alphabetized, ignoring a/an/the.
 - Iced coffee
 - The ick
 - An if statement nobody dares delete
-- An inbox rule that hid everything
 - An influencer apology video
-- Instant coffee at a critical moment
 - Interpretive dance
 - Introducing myself twice to the same person
 - Jeep owners
-- A karaoke machine
-- A laptop at three percent
 - A laptop held together by hope
 - The last chip in the bag
 - The last functioning brain cell
 - A laugh that arrives half a second too late
 - Laughing at the wrong moment
 - A lava lamp
-- A leaf blower at dawn
 - A legally questionable solution
 - Letting the intrusive thoughts win
 - Line dancing
 - LinkedIn influencers
 - A little treat
-- A locked room with a fan in it
-- Locking in
-- Losing a shoe at an important moment
-- A macro from 2009
 - Main Character Energy
 - Making a spreadsheet for something that didn’t need a spreadsheet
 - Making it everyone’s problem
@@ -147,7 +134,6 @@ Alphabetized, ignoring a/an/the.
 - My last nerve
 - My self-care era
 - Mystery meat
-- A nap, taken professionally
 - The nearest Taco Bell
 - Negative aura
 - A neighborhood group chat
@@ -155,14 +141,11 @@ Alphabetized, ignoring a/an/the.
 - Nobody knowing who owns this
 - Nodding as though I understand
 - A notification from your Apple Watch telling you it’s time to stand up
-- A notification popping up mid-demo
 - A novelty tie
 - NPC behavior
-- The number seven, for no reason
 - One wet sock
 - A participation trophy
 - Passive aggression with excellent grammar
-- A password on a sticky note
 - A Peloton leaderboard
 - People who clap when the plane lands
 - People who make air-fryer ownership their personality
@@ -180,7 +163,6 @@ Alphabetized, ignoring a/an/the.
 - Rage bait
 - Randy Marsh
 - Raw enthusiasm and no skills whatsoever
-- A read receipt
 - Reading the room and ignoring it
 - Realizing it halfway through
 - Rearranging the furniture at 2am
@@ -192,7 +174,6 @@ Alphabetized, ignoring a/an/the.
 - A rotisserie chicken
 - A round of applause for basic competence
 - A rubber duck that has heard everything
-- A sandwich made entirely of chips
 - Saying “I deserve this” after doing the absolute bare minimum
 - Saying “you too” at exactly the wrong time
 - Screaming quietly into a mug
@@ -204,12 +185,9 @@ Alphabetized, ignoring a/an/the.
 - A shared mailbox nobody owns
 - Sharing the wrong window
 - A side quest
-- A signature that requires wet ink
 - The silence after a question nobody wants to answer
 - Singing the wrong lyrics with total confidence
 - A single AirPod
-- A single chicken nugget
-- Six full minutes of being on mute
 - A skill issue
 - Small talk in an elevator
 - Snoop Dogg
@@ -230,7 +208,6 @@ Alphabetized, ignoring a/an/the.
 - A Teams message that just says “Hi!”
 - A terrible decision made confidently
 - Test data with real names in it
-- A thumbs-up emoji, weaponized
 - A ticket reopened for the fourth time
 - A TikTok comment section
 - The Titanic
@@ -242,7 +219,6 @@ Alphabetized, ignoring a/an/the.
 - Twelve people and one decision
 - Two hours of talking around the actual problem
 - Two raccoons in a trench coat
-- An unhealthy amount of aura farming
 - Unresolved childhood trauma
 - Vegans
 - The version of me that answers emails
