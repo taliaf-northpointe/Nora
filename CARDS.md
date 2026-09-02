@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-195 cards, dealt six to a hand. The 51 host cards are a separate list
+220 cards, dealt six to a hand. The 57 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (195)
+## Cards (220)
 
 Alphabetized, ignoring a/an/the.
 
@@ -33,6 +33,8 @@ Alphabetized, ignoring a/an/the.
 - Brain rot
 - A browser history best left unexplored
 - A bucket of glitter
+- Building IKEA furniture incorrectly
+- Buying something I don’t need because I’m actually losing money if I don’t buy it on sale
 - A cake that looks like something else
 - A calendar invite with no agenda
 - Calling a teacher mom
@@ -41,6 +43,7 @@ Alphabetized, ignoring a/an/the.
 - Claude confidently making something up
 - Claude explaining something nobody asked about
 - Claude with no adult supervision
+- Cleaning as a form of procrastination
 - A comment that says do not touch this
 - A concerning amount of duct tape
 - A concerning lack of supervision
@@ -48,7 +51,10 @@ Alphabetized, ignoring a/an/the.
 - A cookie tin containing only wrappers
 - Costco
 - A Costco membership
+- A Costco-sized jar of pickles
+- Creating an automated solution to a problem that would have taken 30 seconds to fix manually
 - CrossFit
+- Crying in the Costco parking lot
 - A dashboard nobody opens
 - A deeply unnecessary pivot table
 - Deleting the wrong row
@@ -58,6 +64,8 @@ Alphabetized, ignoring a/an/the.
 - Disney adults
 - Doing it properly the second time
 - A dramatic pause
+- A drawer full of mystery cables
+- Eating shredded cheese over the sink
 - An Emotional Support Water Bottle
 - An entire personality built on one certification
 - An entire wheel of cheese
@@ -67,13 +75,17 @@ Alphabetized, ignoring a/an/the.
 - A firm handshake and nothing else
 - A five-hour board game
 - A folder called New Folder (3)
+- Gardening
 - Getting absolutely cooked
 - Getting stuck in a revolving door
 - A Git merge conflict
+- Going to Target for one thing
 - Going viral for all the wrong reasons
 - Golden-doodle owners
+- Googling symptoms
 - Gordon Ramsay
 - A group hike nobody enjoyed
+- The guy who won’t stop explaining crypto
 - Guys who peaked in a fraternity
 - An HDMI cable that only works upside down
 - The HOA
@@ -99,6 +111,7 @@ Alphabetized, ignoring a/an/the.
 - A lava lamp
 - A leaf blower at dawn
 - A legally questionable solution
+- Letting the intrusive thoughts win
 - Line dancing
 - A little treat
 - A locked room with a fan in it
@@ -106,6 +119,7 @@ Alphabetized, ignoring a/an/the.
 - Losing a shoe at an important moment
 - A macro from 2009
 - Main Character Energy
+- Making a spreadsheet for something that didn’t need a spreadsheet
 - Making it everyone’s problem
 - Martha Stewart
 - A meeting conducted entirely in acronyms
@@ -126,6 +140,7 @@ Alphabetized, ignoring a/an/the.
 - A novelty tie
 - NPC behavior
 - The number seven, for no reason
+- One wet sock
 - Passive aggression with excellent grammar
 - A password on a sticky note
 - A Peloton leaderboard
@@ -133,6 +148,7 @@ Alphabetized, ignoring a/an/the.
 - People who make air-fryer ownership their personality
 - People who make sourdough their entire personality
 - People who wear matching Patagonia vests
+- The person who doesn’t return the shopping cart
 - The person who never left the meeting
 - Pickleball
 - Pressing Reply instead of Forward
@@ -144,6 +160,7 @@ Alphabetized, ignoring a/an/the.
 - A read receipt
 - Reading the room and ignoring it
 - Realizing it halfway through
+- Rearranging the furniture at 2am
 - A recurring meeting nobody can cancel
 - Replying to a text three weeks later
 - Rizz
@@ -152,6 +169,7 @@ Alphabetized, ignoring a/an/the.
 - A round of applause for basic competence
 - A rubber duck that has heard everything
 - A sandwich made entirely of chips
+- Saying “I deserve this” after doing the absolute bare minimum
 - Saying “you too” at exactly the wrong time
 - Screaming quietly into a mug
 - Screenshots of screenshots
@@ -165,6 +183,7 @@ Alphabetized, ignoring a/an/the.
 - A signature that requires wet ink
 - The silence after a question nobody wants to answer
 - Singing the wrong lyrics with total confidence
+- A single AirPod
 - Six full minutes of being on mute
 - A skill issue
 - Small talk in an elevator
@@ -172,10 +191,13 @@ Alphabetized, ignoring a/an/the.
 - A snow globe of somewhere terrible
 - Somebody else’s problem
 - Someone else’s undocumented script
+- Someone who brought their own measuring tape
 - Someone who says “per my last email”
 - Someone’s vacation photos. All of them.
 - A spreadsheet with feelings
 - Standing up to leave and then sitting back down
+- Staring into the void
+- Starting a new hobby and buying everything immediately
 - A suspicious amount of mayonnaise
 - A suspiciously specific Google search
 - A suspiciously warm laptop
@@ -202,6 +224,9 @@ Alphabetized, ignoring a/an/the.
 - Vibe coding
 - A VPN that only works on Tuesdays
 - Walking confidently in the wrong direction
+- Walking into a room and forgetting why
 - Walmart
+- Watching documentaries about extremely specific topics
 - Waving at someone who was not waving at me
+- Wearing socks with sandals
 - “Let’s take this offline.”
