@@ -1869,11 +1869,10 @@ $('join-name').onkeydown = e => { if(e.key === 'Enter') $('do-join').click(); };
 
 (function(){
   const tip = $('door-tip');
-  if(!Voice.ready()){
-    tip.textContent = 'This browser has no speech built in, so Nora will be silent. Everything else still works.';
-  } else {
-    tip.textContent = PROMPTS.length + ' prompts and ' + ANSWERS.length + ' answer cards loaded.';
-  }
+  // only surface a note when speech is missing; no card-count chatter otherwise
+  tip.textContent = Voice.ready()
+    ? ''
+    : 'This browser has no speech built in, so Nora will be silent. Everything else still works.';
   Voice.loadVoices($('set-voice'));
 })();
 
