@@ -1132,7 +1132,7 @@ const Voice = {
       const note = document.getElementById('setup-tip');
       if(note && !this.userChose){
         const isAva = /\bava\b/i.test(best.name);
-        if(isAva) note.textContent = 'Nora is using Ava. She streams from Microsoft, so she needs an internet connection to speak.';
+        if(isAva) note.textContent = '';
         else if(picked.length) note.textContent = 'Nora is using ' + best.name + '. Ava only appears in Microsoft Edge, so host there if you want her.';
         else if(accented.length) note.textContent = 'Nora is using ' + best.name + '. Ava is an Edge-only voice, so host in Microsoft Edge to get her.';
         else note.textContent = 'No Ava and no British or Australian voice on this browser. Host in Microsoft Edge and Nora will find her.';
