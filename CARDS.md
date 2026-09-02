@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-233 cards, dealt six to a hand. The 60 host cards are a separate list
+249 cards, dealt six to a hand. The 60 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (233)
+## Cards (249)
 
 Alphabetized, ignoring a/an/the.
 
@@ -25,6 +25,7 @@ Alphabetized, ignoring a/an/the.
 - All caps in a subject line
 - Astrology girls
 - The audacity
+- Bad financial decisions
 - Being locked out of the thing I built
 - Being right at the wrong time
 - Being seen typing and then not sending
@@ -55,6 +56,7 @@ Alphabetized, ignoring a/an/the.
 - A Costco-sized jar of pickles
 - Creating an automated solution to a problem that would have taken 30 seconds to fix manually
 - CrossFit
+- A cry for help
 - Crying in the Costco parking lot
 - A dashboard nobody opens
 - A deeply unnecessary pivot table
@@ -67,20 +69,24 @@ Alphabetized, ignoring a/an/the.
 - A dramatic pause
 - A drawer full of mystery cables
 - Eating shredded cheese over the sink
+- Emotional damage
 - An Emotional Support Water Bottle
 - An entire personality built on one certification
 - The entire state of Florida
 - An entire wheel of cheese
 - Eye contact held two seconds too long
 - A Facebook mom group
+- False confidence
 - A file named final_FINAL_v7
 - A firm handshake and nothing else
 - A five-hour board game
 - A folder called New Folder (3)
 - Gardening
+- Generational trauma
 - Getting absolutely cooked
 - Getting stuck in a revolving door
 - A Git merge conflict
+- A GoFundMe
 - Going to Target for one thing
 - Going viral for all the wrong reasons
 - Golden-doodle owners
@@ -99,8 +105,11 @@ Alphabetized, ignoring a/an/the.
 - A hot tub in the wrong place
 - A hotfix for the hotfix
 - Hugging someone who wanted a handshake
+- Iced coffee
+- The ick
 - An if statement nobody dares delete
 - An inbox rule that hid everything
+- An influencer apology video
 - Instant coffee at a critical moment
 - Interpretive dance
 - Introducing myself twice to the same person
@@ -137,7 +146,10 @@ Alphabetized, ignoring a/an/the.
 - My entire personality
 - My grand plans for the weekend
 - My last nerve
+- My self-care era
+- Mystery meat
 - A nap, taken professionally
+- The nearest Taco Bell
 - Negative aura
 - A neighborhood group chat
 - No thoughts, just vibes
@@ -149,6 +161,7 @@ Alphabetized, ignoring a/an/the.
 - NPC behavior
 - The number seven, for no reason
 - One wet sock
+- A participation trophy
 - Passive aggression with excellent grammar
 - A password on a sticky note
 - A Peloton leaderboard
@@ -166,6 +179,7 @@ Alphabetized, ignoring a/an/the.
 - Pushing a door marked pull
 - A questionable life choice
 - Rage bait
+- Randy Marsh
 - Raw enthusiasm and no skills whatsoever
 - A read receipt
 - Reading the room and ignoring it
@@ -195,6 +209,7 @@ Alphabetized, ignoring a/an/the.
 - The silence after a question nobody wants to answer
 - Singing the wrong lyrics with total confidence
 - A single AirPod
+- A single chicken nugget
 - Six full minutes of being on mute
 - A skill issue
 - Small talk in an elevator
@@ -228,6 +243,7 @@ Alphabetized, ignoring a/an/the.
 - Turning it off and on again
 - Twelve people and one decision
 - Two hours of talking around the actual problem
+- Two raccoons in a trench coat
 - An unhealthy amount of aura farming
 - Unresolved childhood trauma
 - Vegans
