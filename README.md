@@ -70,7 +70,10 @@ only their own submission and vote.
 - `ngs/CODE/hand/<id>` — a player's six cards, written by the host.
 
 Hands live in separate keys rather than inside the shared state, so nobody can
-open dev tools and read the room's cards.
+open dev tools and read the room's cards. A player who dislikes their six can
+swap the whole hand for a fresh deal once per round, before they play a card —
+the phone flags it, the host deals a new hand and stamps it so the phone knows
+the replacement has arrived.
 
 Three interchangeable backends provide those keys, chosen automatically:
 `window.storage` when the game runs inside a Claude artifact; a direct

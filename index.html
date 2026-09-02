@@ -1198,7 +1198,10 @@ const Host = {
 
   async pushHand(p){
     if(p.sim || !hasStore) return;
-    try { await put(kHand(this.code, p.id), {round:this.round, cards:this.hands[p.id] || []}); } catch(e){}
+    // ver bumps on every write; redraw stamps which swap this hand answers,
+    // so the player can tell a real swap from an unrelated re-push
+    p.handVer = (p.handVer || 0) + 1;
+    try { await put(kHand(this.code, p.id), {round:this.round, ver:p.handVer, redraw:p.redrawSeen || 0, cards:this.hands[p.id] || []}); } catch(e){}
   },
 
   async readPlayers(){
@@ -1261,7 +1264,14 @@ const Host = {
         if(p.card) continue;
         if(p.sim){ continue; }
         const r = byId[p.id];
-        if(r && r.round === this.round && r.card){
+        if(!r) continue;
+        // a player asked to swap their whole hand for a fresh one
+        if((r.redraw || 0) > (p.redrawSeen || 0)){
+          p.redrawSeen = r.redraw;
+          this.hands[p.id] = this.draw(HAND_SIZE);
+          await this.pushHand(p);
+        }
+        if(r.round === this.round && r.card){
           p.card = r.card;
           this.hands[p.id] = (this.hands[p.id] || []).filter(c => c !== r.card);
           await this.pushHand(p);
@@ -1295,7 +1305,7 @@ const Host = {
     this.phase = 'PROMPT';
     this.subs = []; this.owners = []; this.revealed = 0; this.tally = {}; this.winner = null;
     for(const p of this.players){
-      p.card = null; p.vote = null; p.active = true;
+      p.card = null; p.vote = null; p.active = true; p.redrawSeen = 0;
       while((this.hands[p.id] || []).length < HAND_SIZE){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1)); }
       await this.pushHand(p);
     }
@@ -1536,7 +1546,8 @@ const Host = {
    ============================================================ */
 const Player = {
   code:'', id:'', name:'', sid:'',
-  hand:[], handRound:0, state:null, sel:null,
+  hand:[], handRound:0, handVer:0, state:null, sel:null,
+  myRedraw:0, awaitingHand:false,
   timer:null, busy:false, lastPhase:'', lastRound:0, banner:'',
 
   async join(code, name){
@@ -1560,6 +1571,7 @@ const Player = {
         round:this.state ? this.state.round : 1,
         card:this.myCard || null,
         voteIdx:this.myVote != null ? this.myVote : null,
+        redraw:this.myRedraw || 0,
         ts:Date.now()
       });
       this.banner = '';
@@ -1579,11 +1591,19 @@ const Player = {
       this.state = s;
       if(roundChanged){
         this.myCard = null; this.myVote = null; this.sel = null;
+        this.myRedraw = 0; this.awaitingHand = false;
         await this.pushMe();
       }
       if(this.handRound !== s.round){
         const h = await pull(kHand(this.code, this.id));
-        if(h && h.round === s.round){ this.hand = h.cards; this.handRound = s.round; }
+        if(h && h.round === s.round){ this.hand = h.cards; this.handRound = s.round; this.handVer = h.ver || 0; this.awaitingHand = false; }
+      } else if(this.awaitingHand){
+        // a swap was requested; take the hand the host dealt for THIS swap,
+        // not an unrelated re-push (matched by the redraw stamp)
+        const h = await pull(kHand(this.code, this.id));
+        if(h && h.round === s.round && (h.redraw || 0) >= this.myRedraw){
+          this.hand = h.cards; this.handVer = h.ver || 0; this.awaitingHand = false; this.sel = null;
+        }
       }
       this.banner = '';
     } else if(s && s.sid !== this.sid){
@@ -1602,6 +1622,14 @@ const Player = {
   },
   async castVote(i){
     this.myVote = i;
+    await this.pushMe();
+    this.render();
+  },
+  async requestRedraw(){
+    if(this.myCard || this.awaitingHand || (this.myRedraw || 0) >= 1) return;
+    this.myRedraw = (this.myRedraw || 0) + 1;
+    this.awaitingHand = true;
+    this.sel = null;
     await this.pushMe();
     this.render();
   },
@@ -1629,14 +1657,22 @@ const Player = {
           + '<p>' + esc(this.myCard) + '</p></div>';
         return;
       }
+      const swap = this.awaitingHand
+        ? '<button class="btn ghost wide" id="pv-redraw" disabled>Dealing you a new hand…</button>'
+        : ((this.myRedraw || 0) >= 1
+            ? '<p class="tip" style="text-align:center">That was your hand swap for this round.</p>'
+            : '<button class="btn ghost wide" id="pv-redraw">Don’t like these? Swap for a new hand</button>');
       body.innerHTML = '<div class="pv-prompt">' + promptHTML(s.prompt) + '</div>'
         + '<p class="pv-instruction">Pick a card to fill in the blank.</p>'
         + '<div class="hand">' + this.hand.map((c,i) =>
-            '<button data-card="' + i + '" class="' + (this.sel === i ? 'sel' : '') + '">' + esc(c) + '</button>'
-          ).join('') + '</div>';
+            '<button data-card="' + i + '"' + (this.awaitingHand ? ' disabled' : '') + ' class="' + (this.sel === i ? 'sel' : '') + '">' + esc(c) + '</button>'
+          ).join('') + '</div>'
+        + swap;
       body.querySelectorAll('[data-card]').forEach(btn => {
         btn.onclick = () => { this.sel = parseInt(btn.dataset.card, 10); this.render(); };
       });
+      const rb = $('pv-redraw');
+      if(rb && !rb.disabled) rb.onclick = () => this.requestRedraw();
       if(this.sel != null && this.hand[this.sel]){
         foot.classList.remove('hide');
         foot.innerHTML = '<button class="btn wide" id="pv-commit">Play this card</button>';
