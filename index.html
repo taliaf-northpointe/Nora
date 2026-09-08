@@ -825,6 +825,17 @@ function shortDb(v){
 }
 let DB_URL = normalizeDb(QS.get('db') || FIREBASE_URL);
 
+/* ---- Cloudflare relay (recommended) ----
+   A tiny central server (a Cloudflare Worker) that everyone connects to over
+   HTTPS — the way online Codenames works. With it, the game works on ANY
+   network (home, office, VPN, phone data), not just the same wifi. Paste the
+   deployed Worker URL here after you deploy it (see relay/README.md), or pass
+   ?relay=<url> in the page URL. Leave blank and the game falls back to the
+   same-wifi browser-to-browser mode. */
+const WORKER_URL = "";
+const RELAY_FROM_QS = !!QS.get('relay');
+const RELAY_URL = String(QS.get('relay') || WORKER_URL || '').trim().replace(/\/+$/, '');
+
 const kHost = c => 'ngs:' + c + ':host';
 const kPlayer = (c,id) => 'ngs:' + c + ':pl:' + id;
 const kHand = (c,id) => 'ngs:' + c + ':hand:' + id;
@@ -870,6 +881,25 @@ const FirebaseBackend = {
     if(!r.ok) throw new Error('delete ' + r.status);
     return true;
   }
+};
+
+/* Cloudflare relay: a plain HTTPS key-value store on your own Worker. Same
+   shape as the others, so the game doesn't know the difference. Keys look
+   like ngs:CODE:..., and the Worker routes each to the room's server object.
+   A text/plain body keeps it a "simple" request, so browsers skip the CORS
+   preflight and it's one round-trip per call. */
+const WorkerBackend = {
+  name: 'worker',
+  codeOf(key){ return String(key).split(':')[1] || ''; },
+  async op(code, path, body){
+    const r = await fetch(RELAY_URL + '/r/' + code + path, { method: 'POST', body: JSON.stringify(body) });
+    if(!r.ok) throw new Error('relay ' + r.status);
+    return r.json();
+  },
+  async set(k, v){ await this.op(this.codeOf(k), '/set', {key:k, value:v}); return true; },
+  async get(k){ const j = await this.op(this.codeOf(k), '/get', {key:k}); return j.value; },
+  async list(prefix){ const j = await this.op(this.codeOf(prefix), '/list', {prefix:prefix}); return j.keys || []; },
+  async del(k){ await this.op(this.codeOf(k), '/del', {key:k}); return true; }
 };
 
 /* Browser-to-browser rooms. The host claims the peer id derived from
@@ -990,9 +1020,11 @@ const RtcBackend = {
   }
 };
 
+/* pick a backend: Claude artifact storage if present, else a Firebase URL if
+   set, else the Cloudflare relay if its URL is set, else same-wifi P2P. */
 let Backend = (window.storage && window.storage.get)
   ? ClaudeBackend
-  : (DB_URL ? FirebaseBackend : RtcBackend);
+  : (DB_URL ? FirebaseBackend : (RELAY_URL ? WorkerBackend : RtcBackend));
 let hasStore = true;
 
 async function put(key, obj){ return Backend.set(key, obj); }
@@ -1011,6 +1043,9 @@ function joinLink(code){
   try { base = location.origin + location.pathname; } catch(e){ base = ''; }
   const parts = [];
   if(Backend && Backend.name === 'firebase' && DB_URL) parts.push('db=' + encodeURIComponent(shortDb(DB_URL)));
+  // only carry the relay in the link if it came from the URL; a baked-in
+  // WORKER_URL is already in every player's copy of the page
+  if(Backend && Backend.name === 'worker' && RELAY_FROM_QS) parts.push('relay=' + encodeURIComponent(RELAY_URL));
   parts.push('room=' + code);
   return base + '?' + parts.join('&');
 }
@@ -1271,6 +1306,15 @@ const Host = {
         return;
       }
       this.code = claimed;
+    } else if(Backend.name === 'worker'){
+      // relay mode: pick a code that isn't already an open room
+      let code = '';
+      for(let t = 0; t < 5 && !code; t++){
+        const c = this.makeCode();
+        const taken = await pull(kHost(c));
+        if(!taken) code = c;
+      }
+      this.code = code || this.makeCode();
     } else {
       this.code = this.makeCode();
     }

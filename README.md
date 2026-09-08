@@ -24,12 +24,23 @@ room code doubles as the address, so the code on screen is all anyone needs.
 
 The direct browser-to-browser connection works when everyone is on the **same
 wifi**. Across **different networks** — remote players, or a locked-down
-corporate/bank network — routers and firewalls block the direct path, and the
-game needs a **TURN relay** to bounce the connection through. Without one,
+corporate/bank network — routers and firewalls block the direct path, and
 cross-network players just can't join.
 
-To fix it, get a free TURN credential and paste it into `TURN_SERVERS` near the
-top of the script in `index.html`:
+**The recommended fix is the Cloudflare relay in [`relay/`](relay/)** — a tiny
+central server everyone connects to over HTTPS, exactly how online Codenames
+works. It makes the game work on any network, runs on Cloudflare's free plan,
+and stores only trivial room state you control (not on Google). See
+[`relay/README.md`](relay/README.md) for the ~10-minute deploy, then paste the
+Worker URL into `WORKER_URL` near the top of the script in `index.html`. Until
+then the game falls back to same-wifi mode.
+
+<details><summary>Alternative: a TURN relay (keeps pure browser-to-browser)</summary>
+
+Instead of the central server, you can keep WebRTC and add a **TURN relay**,
+which bounces the direct connection through when a firewall blocks it. Get a
+free TURN credential and paste it into `TURN_SERVERS` near the top of the
+script in `index.html`:
 
 1. Sign up free at https://www.metered.ca/tools/openrelay/ (50 GB/month free —
    plenty for a party game).
@@ -45,12 +56,10 @@ top of the script in `index.html`:
 
 The `:443?transport=tcp` / `turns:` lines make the relay look like ordinary
 HTTPS, which is what slips it through most corporate firewalls. Commit, and
-cross-network play works.
+cross-network play works — though on the strictest networks the central relay
+above is the surer bet.
 
-If the network is strict enough to block even that (some banks do), the
-bulletproof fallback is an HTTPS relay instead of WebRTC — set `FIREBASE_URL`
-below and everything runs over plain HTTPS on port 443, which firewalls almost
-always allow.
+</details>
 
 ---
 
