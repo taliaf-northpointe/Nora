@@ -783,6 +783,29 @@ function show(id){ SCREENS.forEach(s => $(s).classList.toggle('hide', s !== id))
    browser-to-browser sync. Leave blank for zero-setup. */
 const FIREBASE_URL = "";
 
+/* ---- WebRTC relay (TURN) ----
+   The browser-to-browser sync connects players directly. On the SAME wifi
+   that just works. Across DIFFERENT networks — or on a corporate / bank
+   network — routers and firewalls block the direct path, and the game
+   needs a TURN relay to bounce the connection through. Without one,
+   cross-network play fails (which is the "doesn't work on different wifi"
+   symptom). STUN below only helps with simple home routers.
+
+   To make it work everywhere: get a free TURN credential (Metered.ca gives
+   50 GB/month free — see the README) and paste the server line(s) here.
+   TURN over TCP/443 is used so it looks like ordinary HTTPS and slips
+   through most corporate firewalls. */
+const TURN_SERVERS = [
+  // { urls: 'turn:standard.relay.metered.ca:443?transport=tcp', username: 'YOUR_KEY', credential: 'YOUR_KEY' },
+  // { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'YOUR_KEY', credential: 'YOUR_KEY' }
+];
+function iceServers(){
+  return [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ].concat(TURN_SERVERS);
+}
+
 const QS = (function(){
   try { return new URLSearchParams(location.search || ''); }
   catch(e){ return new URLSearchParams(''); }
@@ -874,11 +897,12 @@ const RtcBackend = {
   },
   idFor(code){ return 'nora-ngs-' + String(code).toLowerCase(); },
   codeOf(key){ return String(key).split(':')[1] || ''; },
+  opts(){ return { config: { iceServers: iceServers() } }; },
 
   /* ---- host side ---- */
   hostRoom(code){
     return this.lib().then(() => new Promise((res, rej) => {
-      const p = new Peer(this.idFor(code));
+      const p = new Peer(this.idFor(code), this.opts());
       let settled = false;
       const fail = e => { if(settled) return; settled = true; try{ p.destroy(); }catch(_){} rej(e || new Error('no broker')); };
       p.on('error', fail);
@@ -912,7 +936,7 @@ const RtcBackend = {
     if(this._joining && this.connCode === code && !this.dead) return this._joining;
     this.connCode = code; this.dead = false;
     this._joining = this.lib().then(() => new Promise((res, rej) => {
-      const p = new Peer();
+      const p = new Peer(undefined, this.opts());
       let settled = false;
       const fail = e => {
         if(settled) return; settled = true;

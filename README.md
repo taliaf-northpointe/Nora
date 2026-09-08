@@ -20,6 +20,38 @@ browser *is* the room, and phones connect straight to it over a
 browser-to-browser channel (WebRTC — the same thing Teams calls run on). The
 room code doubles as the address, so the code on screen is all anyone needs.
 
+### Different networks (important)
+
+The direct browser-to-browser connection works when everyone is on the **same
+wifi**. Across **different networks** — remote players, or a locked-down
+corporate/bank network — routers and firewalls block the direct path, and the
+game needs a **TURN relay** to bounce the connection through. Without one,
+cross-network players just can't join.
+
+To fix it, get a free TURN credential and paste it into `TURN_SERVERS` near the
+top of the script in `index.html`:
+
+1. Sign up free at https://www.metered.ca/tools/openrelay/ (50 GB/month free —
+   plenty for a party game).
+2. It gives you a username, a credential, and server URLs.
+3. Paste them into `TURN_SERVERS` (the file has commented examples):
+
+   ```js
+   const TURN_SERVERS = [
+     { urls: 'turn:standard.relay.metered.ca:443?transport=tcp', username: 'YOUR_KEY', credential: 'YOUR_KEY' },
+     { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'YOUR_KEY', credential: 'YOUR_KEY' }
+   ];
+   ```
+
+The `:443?transport=tcp` / `turns:` lines make the relay look like ordinary
+HTTPS, which is what slips it through most corporate firewalls. Commit, and
+cross-network play works.
+
+If the network is strict enough to block even that (some banks do), the
+bulletproof fallback is an HTTPS relay instead of WebRTC — set `FIREBASE_URL`
+below and everything runs over plain HTTPS on port 443, which firewalls almost
+always allow.
+
 ---
 
 ## Running a game
