@@ -832,7 +832,7 @@ let DB_URL = normalizeDb(QS.get('db') || FIREBASE_URL);
    deployed Worker URL here after you deploy it (see relay/README.md), or pass
    ?relay=<url> in the page URL. Leave blank and the game falls back to the
    same-wifi browser-to-browser mode. */
-const WORKER_URL = "";
+const WORKER_URL = "https://nora-game.talia-frazier.workers.dev";
 const RELAY_FROM_QS = !!QS.get('relay');
 const RELAY_URL = String(QS.get('relay') || WORKER_URL || '').trim().replace(/\/+$/, '');
 
