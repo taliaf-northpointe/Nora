@@ -1416,6 +1416,9 @@ const Host = {
   },
 
   async sync(){
+    // nothing is asked of the phones during REVEAL / RESULT, so skip the room read
+    // entirely (on a relay without /getall that is 36 requests per tick in a 35-player room)
+    if(this.phase === 'REVEAL' || this.phase === 'RESULT') return;
     const remote = await this.readPlayers();
 
     // new arrivals
@@ -1780,8 +1783,9 @@ const Player = {
     // room is big and when Nora is talking (REVEAL / RESULT) and no input is needed
     const s = this.state || {};
     const n = (s.players || []).length;
-    const idle = (s.phase === 'REVEAL' || s.phase === 'RESULT' || s.phase === 'GAMEOVER');
-    const wait = idle ? 4500 : (n > 30 ? 4000 : (n > 20 ? 3400 : (n > 12 ? 2800 : 2100)));
+    const wait = s.phase === 'REVEAL' ? 7000
+      : (s.phase === 'RESULT' || s.phase === 'GAMEOVER') ? 5000
+      : (n > 30 ? 4000 : (n > 20 ? 3400 : (n > 12 ? 2800 : 2100)));
     this.timer = setTimeout(() => this.tick(), wait);
   },
   async tick(){
