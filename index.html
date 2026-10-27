@@ -1360,7 +1360,9 @@ const SPEAK_FIXES = [
   [/\bLive(?=,\s*laugh)/gi, 'Liv'],
   // every "read" Nora says is present tense ("I read the cards out loud"), but the
   // voice guesses the past-tense "red" — spell it the way it should sound
-  [/\b(r)ead\b/gi, function(m, r){ return r + 'eed'; }]
+  [/\b(r)ead\b/gi, function(m, r){ return r + 'eed'; }],
+  // the card reads "Sahur"; the voice says it best spelled this way
+  [/\bSahur\b/g, 'suh-hoor']
 ];
 function speakFix(s){ SPEAK_FIXES.forEach(function(f){ s = s.replace(f[0], f[1]); }); return s; }
 function promptSpoken(text, fill){
