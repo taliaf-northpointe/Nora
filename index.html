@@ -1559,7 +1559,6 @@ const Host = {
     const idx = this.revealed;
     this.revealed++;
     this.render();
-    const n = idx + 1;
     const aside = (this.subs.length <= 12 && Math.random() < 0.18) ? ' ' + pick(NORA.aside) : '';
     // just the answer, then a beat of silence before the next one (the number stays on screen for voting)
     Voice.say(speakFix(this.subs[idx].card) + aside, () => setTimeout(() => this.revealNext(), 700), 'reveal');
