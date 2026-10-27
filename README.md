@@ -111,8 +111,9 @@ only their own submission and vote.
 - `ngs/CODE/hand/<id>` — a player's five cards, written by the host.
 
 Hands live in separate keys rather than inside the shared state, so nobody can
-open dev tools and read the room's cards. A player who dislikes their five can
-swap the whole hand for a fresh deal once per round, before they play a card —
+open dev tools and read the room's cards. Cards stay in a hand until played; the played card is replaced straight away.
+A player who dislikes their five can swap the whole hand for a fresh deal twice
+per game, before they play a card in a round —
 the phone flags it, the host deals a new hand and stamps it so the phone knows
 the replacement has arrived.
 

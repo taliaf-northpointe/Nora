@@ -755,6 +755,7 @@ const lines = block => block.trim().split('\n').map(s=>s.trim()).filter(Boolean)
 const PROMPTS = lines(DECK_PROMPTS);
 const ANSWERS = lines(DECK_ANSWERS);
 const HAND_SIZE = 5;
+const SWAPS_PER_GAME = 2;     // whole-hand swaps a player gets for the entire game
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 const SCREENS = ['scr-door','scr-hostsetup','scr-stage','scr-join','scr-player'];
@@ -1291,7 +1292,7 @@ function promptSpoken(text, fill){
    ============================================================ */
 const Host = {
   code:'', sid:'', maxRounds:30, phase:'LOBBY', round:1,
-  players:[], hands:{}, pile:[], prompt:'', promptPool:[],
+  players:[], hands:{}, pile:[], seen:{}, prompt:'', promptPool:[],
   subs:[], owners:[], revealed:0, tally:{}, winner:null,
   seen:{}, timer:null, interval:2200, busy:false, banner:'', qrData:null,
 
@@ -1342,19 +1343,35 @@ const Host = {
     this.loop();
   },
 
-  draw(n){
+  /* Deal n cards. With a player id, never deal that player a card they have
+     held before in this game (the card can still go to someone else later).
+     Skipped cards go back under the pile. */
+  draw(n, pid){
     const out = [];
-    for(let i=0;i<n;i++){
+    const seen = pid ? (this.seen[pid] = this.seen[pid] || new Set()) : null;
+    const skipped = [];
+    let refills = 0;
+    while(out.length < n){
       if(!this.pile.length){
-        // reshuffle only cards that have already been played or swapped away,
-        // so nothing in anyone's hand is dealt twice (matters with 26 hands out)
-        const inHands = new Set([].concat(...Object.values(this.hands || {})));
-        const pool = (this.discard && this.discard.length ? this.discard : ANSWERS.slice()).filter(c => !inHands.has(c));
-        this.pile = shuffle(pool.length ? pool : ANSWERS.slice());
-        this.discard = [];
+        if(skipped.length && refills > 0){
+          // everything left is something this player has already seen — allow a repeat rather than stall
+          this.pile = skipped.splice(0);
+        } else {
+          // reshuffle only cards that have already been played or swapped away,
+          // so nothing in anyone's hand is dealt twice (matters with 35 hands out)
+          const inHands = new Set([].concat(...Object.values(this.hands || {})));
+          const pool = (this.discard && this.discard.length ? this.discard : ANSWERS.slice()).filter(c => !inHands.has(c));
+          this.pile = shuffle(pool.length ? pool : ANSWERS.slice());
+          this.discard = [];
+          refills++;
+        }
       }
-      out.push(this.pile.pop());
+      const c = this.pile.pop();
+      if(seen && seen.has(c) && !(refills > 1 && !this.pile.length)){ skipped.push(c); continue; }
+      out.push(c);
+      if(seen) seen.add(c);
     }
+    if(skipped.length) this.pile.unshift(...shuffle(skipped));
     return out;
   },
   toss(cards){ (this.discard = this.discard || []).push(...(cards || [])); },
@@ -1428,7 +1445,7 @@ const Host = {
       if(!this.players.some(p => p.id === r.id)){
         const p = {id:r.id, name:r.name, score:0, sim:false, fresh:true, active:(this.phase === 'LOBBY')};
         this.players.push(p);
-        this.hands[p.id] = this.draw(this.handSize());
+        this.hands[p.id] = this.draw(this.handSize(), p.id);
         newcomers.push(p);
         added.push(p.name);
       }
@@ -1455,15 +1472,19 @@ const Host = {
         const r = byId[p.id];
         if(!r) continue;
         // a player asked to swap their whole hand for a fresh one
-        if((r.redraw || 0) > (p.redrawSeen || 0)){
-          p.redrawSeen = r.redraw;
+        // a player asked to swap their whole hand (SWAPS_PER_GAME per game; the counter
+        // only ever goes up, so a stale value from an earlier round can't trigger a swap)
+        if((r.redraw || 0) > (p.redrawSeen || 0) && (p.redrawSeen || 0) < SWAPS_PER_GAME){
+          p.redrawSeen = Math.min(r.redraw, SWAPS_PER_GAME);
           this.toss(this.hands[p.id]);
-          this.hands[p.id] = this.draw(this.handSize());
+          this.hands[p.id] = this.draw(this.handSize(), p.id);
           dirty.push(p);
         }
         if(r.round === this.round && r.card){
           p.card = r.card;
+          // the played card leaves the hand and a replacement is drawn right away
           this.hands[p.id] = (this.hands[p.id] || []).filter(c => c !== r.card);
+          while(this.hands[p.id].length < this.handSize()) this.hands[p.id].push(...this.draw(1, p.id));
           if(dirty.indexOf(p) === -1) dirty.push(p);
         }
       }
@@ -1498,8 +1519,8 @@ const Host = {
     this.phase = 'PROMPT';
     this.subs = []; this.owners = []; this.revealed = 0; this.tally = {}; this.winner = null;
     for(const p of this.players){
-      p.card = null; p.vote = null; p.active = true; p.redrawSeen = 0;
-      while((this.hands[p.id] || []).length < this.handSize()){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1)); }
+      p.card = null; p.vote = null; p.active = true;
+      while((this.hands[p.id] || []).length < this.handSize()){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1, p.id)); }
       while((this.hands[p.id] || []).length > this.handSize()){ this.toss([this.hands[p.id].pop()]); }
     }
     await Promise.all(this.players.map(p => this.pushHand(p)));
@@ -1611,7 +1632,7 @@ const Host = {
     if(!name) return;
     const p = {id:'sim' + Date.now(), name:name, score:0, sim:true, fresh:true, card:null, vote:null, active:(this.phase === 'LOBBY')};
     this.players.push(p);
-    this.hands[p.id] = this.draw(this.handSize());
+    this.hands[p.id] = this.draw(this.handSize(), p.id);
     if(this.phase === 'PROMPT') p.card = this.hands[p.id].pop();
     await this.push();
     this.render();
@@ -1797,12 +1818,16 @@ const Player = {
       this.state = s;
       if(roundChanged){
         this.myCard = null; this.myVote = null; this.sel = null;
-        this.myRedraw = 0; this.awaitingHand = false;
+        this.awaitingHand = false; this.refillPending = false;
         await this.pushMe();
       }
       if(this.handRound !== s.round){
         const h = await pull(kHand(this.code, this.id));
         if(h && h.round === s.round){ this.hand = h.cards; this.handRound = s.round; this.handVer = h.ver || 0; this.awaitingHand = false; }
+      } else if(this.refillPending){
+        // the host swaps in a replacement for the card just played
+        const h = await pull(kHand(this.code, this.id));
+        if(h && h.round === s.round && (h.ver || 0) > this.handVer){ this.hand = h.cards; this.handVer = h.ver || 0; this.refillPending = false; }
       } else if(this.awaitingHand){
         // a swap was requested; take the hand the host dealt for THIS swap,
         // not an unrelated re-push (matched by the redraw stamp)
@@ -1823,6 +1848,7 @@ const Player = {
   async playCard(card){
     this.myCard = card;
     this.hand = this.hand.filter(c => c !== card);
+    this.refillPending = true;
     await this.pushMe();
     this.render();
   },
@@ -1832,7 +1858,7 @@ const Player = {
     this.render();
   },
   async requestRedraw(){
-    if(this.myCard || this.awaitingHand || (this.myRedraw || 0) >= 1) return;
+    if(this.myCard || this.awaitingHand || (this.myRedraw || 0) >= SWAPS_PER_GAME) return;
     this.myRedraw = (this.myRedraw || 0) + 1;
     this.awaitingHand = true;
     this.sel = null;
@@ -1863,11 +1889,12 @@ const Player = {
           + '<p>' + esc(this.myCard) + '</p></div>';
         return;
       }
+      const swapsLeft = SWAPS_PER_GAME - (this.myRedraw || 0);
       const swap = this.awaitingHand
         ? '<button class="btn ghost wide" id="pv-redraw" disabled>Dealing you a new hand…</button>'
-        : ((this.myRedraw || 0) >= 1
-            ? '<p class="tip" style="text-align:center">That was your hand swap for this round.</p>'
-            : '<button class="btn ghost wide" id="pv-redraw">Don’t like these? Swap for a new hand</button>');
+        : (swapsLeft <= 0
+            ? '<p class="tip" style="text-align:center">No hand swaps left this game.</p>'
+            : '<button class="btn ghost wide" id="pv-redraw">Don’t like these? Swap your hand (' + swapsLeft + ' left this game)</button>');
       body.innerHTML = '<div class="pv-prompt">' + promptHTML(s.prompt) + '</div>'
         + '<p class="pv-instruction">Pick a card to fill in the blank.</p>'
         + '<div class="hand">' + this.hand.map((c,i) =>
