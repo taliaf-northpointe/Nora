@@ -754,7 +754,7 @@ const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.ran
 const lines = block => block.trim().split('\n').map(s=>s.trim()).filter(Boolean);
 const PROMPTS = lines(DECK_PROMPTS);
 const ANSWERS = lines(DECK_ANSWERS);
-const HAND_SIZE = 6;          // five once a room passes 28 players (see Host.handSize)
+const HAND_SIZE = 5;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 const SCREENS = ['scr-door','scr-hostsetup','scr-stage','scr-join','scr-player'];
@@ -1295,7 +1295,7 @@ const Host = {
   subs:[], owners:[], revealed:0, tally:{}, winner:null,
   seen:{}, timer:null, interval:2200, busy:false, banner:'', qrData:null,
 
-  handSize(){ return this.players.length > 28 ? 5 : HAND_SIZE; },
+  handSize(){ return HAND_SIZE; },
 
   makeCode(){
     return Array.from({length:4}, () => CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
@@ -1497,7 +1497,6 @@ const Host = {
     for(const p of this.players){
       p.card = null; p.vote = null; p.active = true; p.redrawSeen = 0;
       while((this.hands[p.id] || []).length < this.handSize()){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1)); }
-      // if the room grew past 28 mid-game, bring early joiners down to the same hand size
       while((this.hands[p.id] || []).length > this.handSize()){ this.toss([this.hands[p.id].pop()]); }
     }
     await Promise.all(this.players.map(p => this.pushHand(p)));

@@ -108,10 +108,10 @@ only their own submission and vote.
 
 - `ngs/CODE/host` — game state. Host writes, everyone reads.
 - `ngs/CODE/pl/<id>` — one key per player. That player writes, host reads.
-- `ngs/CODE/hand/<id>` — a player's hand (six cards, five in rooms over 28), written by the host.
+- `ngs/CODE/hand/<id>` — a player's five cards, written by the host.
 
 Hands live in separate keys rather than inside the shared state, so nobody can
-open dev tools and read the room's cards. A player who dislikes their six can
+open dev tools and read the room's cards. A player who dislikes their five can
 swap the whole hand for a fresh deal once per round, before they play a card —
 the phone flags it, the host deals a new hand and stamps it so the phone knows
 the replacement has arrived.
@@ -137,8 +137,8 @@ in one request per tick (parallel requests on an older relay), hands are dealt
 in parallel, and played cards recycle through a discard pile so nothing in a
 hand is ever dealt twice. Past a dozen players Nora drops her asides while
 reading cards, phones poll a little slower, and the stage shows the cards in
-two columns; past 28 players hands shrink from six cards to five so the deck
-holds out. Nora reads the question once when submissions close, then just the
+two columns. Everyone holds five cards, which keeps the 223-card deck
+comfortable even with 35 hands out. Nora reads the question once when submissions close, then just the
 answers. Reading 35 cards aloud still takes a couple of minutes a round; the
 host can hit "Skip to voting" at any point.
 
