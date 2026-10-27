@@ -754,7 +754,7 @@ const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.ran
 const lines = block => block.trim().split('\n').map(s=>s.trim()).filter(Boolean);
 const PROMPTS = lines(DECK_PROMPTS);
 const ANSWERS = lines(DECK_ANSWERS);
-const HAND_SIZE = 6;
+const HAND_SIZE = 6;          // five once a room passes 28 players (see Host.handSize)
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 const SCREENS = ['scr-door','scr-hostsetup','scr-stage','scr-join','scr-player'];
@@ -1295,6 +1295,8 @@ const Host = {
   subs:[], owners:[], revealed:0, tally:{}, winner:null,
   seen:{}, timer:null, interval:2200, busy:false, banner:'', qrData:null,
 
+  handSize(){ return this.players.length > 28 ? 5 : HAND_SIZE; },
+
   makeCode(){
     return Array.from({length:4}, () => CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
   },
@@ -1423,7 +1425,7 @@ const Host = {
       if(!this.players.some(p => p.id === r.id)){
         const p = {id:r.id, name:r.name, score:0, sim:false, fresh:true, active:(this.phase === 'LOBBY')};
         this.players.push(p);
-        this.hands[p.id] = this.draw(HAND_SIZE);
+        this.hands[p.id] = this.draw(this.handSize());
         newcomers.push(p);
         added.push(p.name);
       }
@@ -1453,7 +1455,7 @@ const Host = {
         if((r.redraw || 0) > (p.redrawSeen || 0)){
           p.redrawSeen = r.redraw;
           this.toss(this.hands[p.id]);
-          this.hands[p.id] = this.draw(HAND_SIZE);
+          this.hands[p.id] = this.draw(this.handSize());
           dirty.push(p);
         }
         if(r.round === this.round && r.card){
@@ -1494,7 +1496,9 @@ const Host = {
     this.subs = []; this.owners = []; this.revealed = 0; this.tally = {}; this.winner = null;
     for(const p of this.players){
       p.card = null; p.vote = null; p.active = true; p.redrawSeen = 0;
-      while((this.hands[p.id] || []).length < HAND_SIZE){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1)); }
+      while((this.hands[p.id] || []).length < this.handSize()){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1)); }
+      // if the room grew past 28 mid-game, bring early joiners down to the same hand size
+      while((this.hands[p.id] || []).length > this.handSize()){ this.toss([this.hands[p.id].pop()]); }
     }
     await Promise.all(this.players.map(p => this.pushHand(p)));
     await this.push();
@@ -1531,7 +1535,8 @@ const Host = {
     this.phase = 'REVEAL'; this.revealed = 0;
     await this.push();
     this.render();
-    Voice.say(pick(NORA.closed), () => this.revealNext(), 'closed');
+    // say the question once here; each card is then read on its own
+    Voice.say(pick(NORA.closed) + ' ' + promptSpoken(this.prompt), () => this.revealNext(), 'closed');
   },
 
   revealNext(){
@@ -1554,7 +1559,7 @@ const Host = {
     this.render();
     const n = idx + 1;
     const aside = (this.subs.length <= 12 && Math.random() < 0.18) ? ' ' + pick(NORA.aside) : '';
-    Voice.say('Number ' + n + '. ' + promptSpoken(this.prompt, this.subs[idx].card) + aside, () => this.revealNext(), 'reveal');
+    Voice.say('Number ' + n + '. ' + speakFix(this.subs[idx].card) + aside, () => this.revealNext(), 'reveal');
   },
 
   async closeVoting(){
@@ -1604,7 +1609,7 @@ const Host = {
     if(!name) return;
     const p = {id:'sim' + Date.now(), name:name, score:0, sim:true, fresh:true, card:null, vote:null, active:(this.phase === 'LOBBY')};
     this.players.push(p);
-    this.hands[p.id] = this.draw(HAND_SIZE);
+    this.hands[p.id] = this.draw(this.handSize());
     if(this.phase === 'PROMPT') p.card = this.hands[p.id].pop();
     await this.push();
     this.render();
@@ -1777,7 +1782,7 @@ const Player = {
     const s = this.state || {};
     const n = (s.players || []).length;
     const idle = (s.phase === 'REVEAL' || s.phase === 'RESULT' || s.phase === 'GAMEOVER');
-    const wait = idle ? 4500 : (n > 20 ? 3400 : (n > 12 ? 2800 : 2100));
+    const wait = idle ? 4500 : (n > 30 ? 4000 : (n > 20 ? 3400 : (n > 12 ? 2800 : 2100)));
     this.timer = setTimeout(() => this.tick(), wait);
   },
   async tick(){
