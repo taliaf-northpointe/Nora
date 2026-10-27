@@ -1561,7 +1561,8 @@ const Host = {
     this.render();
     const n = idx + 1;
     const aside = (this.subs.length <= 12 && Math.random() < 0.18) ? ' ' + pick(NORA.aside) : '';
-    Voice.say('Number ' + n + '. ' + speakFix(this.subs[idx].card) + aside, () => this.revealNext(), 'reveal');
+    // just the answer, then a beat of silence before the next one (the number stays on screen for voting)
+    Voice.say(speakFix(this.subs[idx].card) + aside, () => setTimeout(() => this.revealNext(), 700), 'reveal');
   },
 
   async closeVoting(){
