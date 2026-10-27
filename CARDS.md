@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-223 cards, dealt six to a hand. The 60 host cards are a separate list
+238 cards, dealt five to a hand. The 60 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (223)
+## Cards (238)
 
 Alphabetized, ignoring a/an/the.
 
@@ -21,6 +21,7 @@ Alphabetized, ignoring a/an/the.
 - AI slop
 - An AI-generated apology
 - The algorithm
+- Asking Claude to write the apology for what Claude did
 - Astrology girls
 - The audacity
 - Aura Farming
@@ -32,6 +33,7 @@ Alphabetized, ignoring a/an/the.
 - A birthday cake that says sorry
 - Blaming the network
 - Brain rot
+- Brian Griffin
 - A browser history best left unexplored
 - A bucket of glitter
 - Building IKEA furniture incorrectly
@@ -66,6 +68,7 @@ Alphabetized, ignoring a/an/the.
 - Doing it properly the second time
 - A dramatic pause
 - A drawer full of mystery cables
+- Dwight Schrute
 - Eating shredded cheese over the sink
 - Emotional damage
 - An Emotional Support Water Bottle
@@ -76,8 +79,10 @@ Alphabetized, ignoring a/an/the.
 - False confidence
 - A file named final_FINAL_v7
 - A firm handshake and nothing else
+- A Fortnite skin
 - Gardening
 - Generational trauma
+- A “Get Ready With Me” TikTok
 - Getting absolutely cooked
 - Getting stuck in a revolving door
 - A Git merge conflict
@@ -92,6 +97,7 @@ Alphabetized, ignoring a/an/the.
 - The guy who won’t stop explaining crypto
 - Guys who peaked in a fraternity
 - An HDMI cable that only works upside down
+- Hello Kitty Island Adventure
 - The HOA
 - A hobby I did for two weeks
 - Holding a door open for far too long
@@ -107,6 +113,7 @@ Alphabetized, ignoring a/an/the.
 - Interpretive dance
 - Introducing myself twice to the same person
 - Jeep owners
+- Jimothy the Raccoon
 - A laptop held together by hope
 - The last chip in the bag
 - The last functioning brain cell
@@ -114,6 +121,7 @@ Alphabetized, ignoring a/an/the.
 - Laughing at the wrong moment
 - A lava lamp
 - A legally questionable solution
+- “Let’s take this offline.”
 - Letting the intrusive thoughts win
 - Line dancing
 - LinkedIn influencers
@@ -155,9 +163,11 @@ Alphabetized, ignoring a/an/the.
 - The person who never left the meeting
 - Pickleball
 - A playground
+- A poorly coordinated TikTok dance
 - Pressing Reply instead of Forward
 - Pretending to read the terms
 - A printer error from 2007
+- Pumpkin spice anything
 - Pushing a door marked pull
 - A questionable life choice
 - Rage bait
@@ -174,12 +184,14 @@ Alphabetized, ignoring a/an/the.
 - A rotisserie chicken
 - A round of applause for basic competence
 - A rubber duck that has heard everything
+- Sabrina Carpenter
 - Saying “I deserve this” after doing the absolute bare minimum
 - Saying “you too” at exactly the wrong time
 - Screaming quietly into a mug
 - Screenshots of screenshots
 - Sea shanties
 - A secret third option
+- A self-checkout that needs assistance
 - Sending a voice note by accident
 - A sensible decision, made two years late
 - A shared mailbox nobody owns
@@ -197,6 +209,7 @@ Alphabetized, ignoring a/an/the.
 - Someone who brought their own measuring tape
 - Someone who says “per my last email”
 - Someone’s vacation photos. All of them.
+- The soundtrack from Halo 2
 - A spreadsheet with feelings
 - Standing up to leave and then sitting back down
 - Staring into the void
@@ -206,8 +219,10 @@ Alphabetized, ignoring a/an/the.
 - A suspiciously warm laptop
 - Taylor Swift
 - A Teams message that just says “Hi!”
+- Tegridy Farms
 - A terrible decision made confidently
 - Test data with real names in it
+- TheBurntPeanut
 - A ticket reopened for the fourth time
 - A TikTok comment section
 - The Titanic
@@ -215,6 +230,7 @@ Alphabetized, ignoring a/an/the.
 - Touching grass
 - Trader Joe’s
 - Tripping and pretending it was on purpose
+- Tung Tung Tung Sahur
 - Turning it off and on again
 - Twelve people and one decision
 - Two hours of talking around the actual problem
@@ -231,5 +247,4 @@ Alphabetized, ignoring a/an/the.
 - Watching documentaries about extremely specific topics
 - Waving at someone who was not waving at me
 - Wearing socks with sandals
-- A “Get Ready With Me” TikTok
-- “Let’s take this offline.”
+- World of Warcraft
