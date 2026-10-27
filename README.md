@@ -143,6 +143,8 @@ answers. Reading 35 cards aloud still takes a couple of minutes a round; the
 host can hit "Skip to voting" at any point.
 
 One thing to watch with a big room: the relay runs on Cloudflare's free plan,
-which allows 100,000 requests a day. 35 phones polling every 4 seconds plus
-the host is roughly 33,000 requests an hour, so a single evening's game is fine
-but two long back-to-back sessions could brush the limit.
+which allows 100,000 requests a day. With 35 phones, a 15-round game is about
+60,000 requests on the relay as deployed today, which is fine. A 30-round game
+would brush the cap unless the relay in `relay/` is redeployed: it gains a
+`/getall` op that lets the host read the whole room in one request per tick
+instead of one per player, which roughly halves the total.
