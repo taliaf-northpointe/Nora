@@ -1361,8 +1361,7 @@ const SPEAK_FIXES = [
   // every "read" Nora says is present tense ("I read the cards out loud"), but the
   // voice guesses the past-tense "red" — spell it the way it should sound
   [/\b(r)ead\b/gi, function(m, r){ return r + 'eed'; }],
-  // the card reads "Tung Tung Tung Sahur"; said with a beat between the Tungs and "saw-hoor"
-  [/\bTung Tung Tung Sahur\b/g, 'Tung, Tung, Tung, saw-hoor'],
+  // the card reads "Sahur"; the voice says it best spelled "saw-hoor"
   [/\bSahur\b/g, 'saw-hoor']
 ];
 function speakFix(s){ SPEAK_FIXES.forEach(function(f){ s = s.replace(f[0], f[1]); }); return s; }
