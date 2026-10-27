@@ -47,7 +47,7 @@ export default {
     if(origin && ALLOW_ORIGINS.indexOf(origin) === -1) return reply({ error: 'forbidden' }, origin, 403);
 
     const url = new URL(req.url);
-    const m = /^\/r\/([A-Za-z0-9]{1,8})\/(set|get|list|del)$/.exec(url.pathname);
+    const m = /^\/r\/([A-Za-z0-9]{1,8})\/(set|get|list|getall|del)$/.exec(url.pathname);
     if(!m || req.method !== 'POST') return reply({ error: 'not found' }, origin, 404);
 
     const code = m[1].toUpperCase();
@@ -87,6 +87,14 @@ export class Room {
     if(op === 'list'){
       const map = await this.storage.list({ prefix: body.prefix || '' });
       return this.j({ keys: Array.from(map.keys()) });
+    }
+    // every key AND value under a prefix in one call. The host uses this to read
+    // all 26 players' records per tick instead of 26 separate requests.
+    if(op === 'getall'){
+      const map = await this.storage.list({ prefix: body.prefix || '' });
+      const values = {};
+      for(const [k, v] of map) values[k] = v;
+      return this.j({ values: values });
     }
     if(op === 'del'){
       await this.storage.delete(body.key);

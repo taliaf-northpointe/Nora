@@ -158,6 +158,8 @@
     box-shadow:0 16px 34px -20px rgba(0,0,0,.7);
   }
   .reveal-row{width:min(1000px,100%);display:flex;flex-direction:column;gap:12px}
+  .reveal-row.many{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;width:min(1240px,100%)}
+  .reveal-row.many .answer-card{font-size:15px;padding:10px 12px}
   .reveal-card{
     display:flex;align-items:center;gap:18px;
   }
@@ -899,7 +901,15 @@ const WorkerBackend = {
   async set(k, v){ await this.op(this.codeOf(k), '/set', {key:k, value:v}); return true; },
   async get(k){ const j = await this.op(this.codeOf(k), '/get', {key:k}); return j.value; },
   async list(prefix){ const j = await this.op(this.codeOf(prefix), '/list', {prefix:prefix}); return j.keys || []; },
-  async del(k){ await this.op(this.codeOf(k), '/del', {key:k}); return true; }
+  async del(k){ await this.op(this.codeOf(k), '/del', {key:k}); return true; },
+  // every value under a prefix in ONE round trip — what keeps a 26-player room
+  // snappy. Older Workers without /getall answer 404; we remember and fall back.
+  noGetAll:false,
+  async getAll(prefix){
+    if(this.noGetAll) return null;
+    try { const j = await this.op(this.codeOf(prefix), '/getall', {prefix:prefix}); return j.values || {}; }
+    catch(e){ if(/relay 404/.test(String(e))) this.noGetAll = true; return null; }
+  }
 };
 
 /* Browser-to-browser rooms. The host claims the peer id derived from
@@ -1333,11 +1343,19 @@ const Host = {
   draw(n){
     const out = [];
     for(let i=0;i<n;i++){
-      if(!this.pile.length) this.pile = shuffle(ANSWERS.slice());
+      if(!this.pile.length){
+        // reshuffle only cards that have already been played or swapped away,
+        // so nothing in anyone's hand is dealt twice (matters with 26 hands out)
+        const inHands = new Set([].concat(...Object.values(this.hands || {})));
+        const pool = (this.discard && this.discard.length ? this.discard : ANSWERS.slice()).filter(c => !inHands.has(c));
+        this.pile = shuffle(pool.length ? pool : ANSWERS.slice());
+        this.discard = [];
+      }
       out.push(this.pile.pop());
     }
     return out;
   },
+  toss(cards){ (this.discard = this.discard || []).push(...(cards || [])); },
 
   /* ---- shared state the players read ---- */
   async push(){
@@ -1365,20 +1383,23 @@ const Host = {
 
   async readPlayers(){
     if(!hasStore) return [];
-    const keys = await listKeys('ngs:' + this.code + ':pl:');
-    if(!keys) return [];
-    const out = [];
-    for(const k of keys){
-      const v = await pull(k);
-      if(v && v.sid === this.sid) out.push(v);
+    const prefix = 'ngs:' + this.code + ':pl:';
+    // relay with /getall: one request for the whole room
+    if(Backend.getAll){
+      const all = await Backend.getAll(prefix);
+      if(all) return Object.values(all).filter(v => v && v.sid === this.sid);
     }
-    return out;
+    // otherwise fetch every player at once rather than one after another
+    const keys = await listKeys(prefix);
+    if(!keys || !keys.length) return [];
+    const vals = await Promise.all(keys.map(k => pull(k).catch(() => null)));
+    return vals.filter(v => v && v.sid === this.sid);
   },
 
   loop(){
     clearTimeout(this.timer);
     const idle = (this.phase === 'REVEAL' || this.phase === 'RESULT' || this.phase === 'GAMEOVER');
-    const wait = idle ? 5000 : (this.players.length > 8 ? 3200 : this.interval);
+    const wait = idle ? 5000 : (this.players.length > 16 ? 2800 : this.interval);
     this.timer = setTimeout(() => this.tick(), wait);
   },
 
@@ -1397,15 +1418,17 @@ const Host = {
 
     // new arrivals
     let added = [];
+    const newcomers = [];
     for(const r of remote){
       if(!this.players.some(p => p.id === r.id)){
         const p = {id:r.id, name:r.name, score:0, sim:false, fresh:true, active:(this.phase === 'LOBBY')};
         this.players.push(p);
         this.hands[p.id] = this.draw(HAND_SIZE);
-        await this.pushHand(p);
+        newcomers.push(p);
         added.push(p.name);
       }
     }
+    await Promise.all(newcomers.map(p => this.pushHand(p)));
     if(added.length){
       await this.push();
       if(this.phase === 'LOBBY' && added.length <= 2){
@@ -1419,6 +1442,8 @@ const Host = {
     remote.forEach(r => byId[r.id] = r);
 
     if(this.phase === 'PROMPT'){
+      // apply every player's move first, then write all the changed hands at once
+      const dirty = [];
       for(const p of this.players){
         if(p.card) continue;
         if(p.sim){ continue; }
@@ -1427,15 +1452,17 @@ const Host = {
         // a player asked to swap their whole hand for a fresh one
         if((r.redraw || 0) > (p.redrawSeen || 0)){
           p.redrawSeen = r.redraw;
+          this.toss(this.hands[p.id]);
           this.hands[p.id] = this.draw(HAND_SIZE);
-          await this.pushHand(p);
+          dirty.push(p);
         }
         if(r.round === this.round && r.card){
           p.card = r.card;
           this.hands[p.id] = (this.hands[p.id] || []).filter(c => c !== r.card);
-          await this.pushHand(p);
+          if(dirty.indexOf(p) === -1) dirty.push(p);
         }
       }
+      await Promise.all(dirty.map(p => this.pushHand(p)));
       const inRound = this.players.filter(p => p.active);
       if(inRound.length >= 2 && inRound.every(p => p.card)) await this.closeSubmissions();
     }
@@ -1468,8 +1495,8 @@ const Host = {
     for(const p of this.players){
       p.card = null; p.vote = null; p.active = true; p.redrawSeen = 0;
       while((this.hands[p.id] || []).length < HAND_SIZE){ this.hands[p.id] = (this.hands[p.id]||[]).concat(this.draw(1)); }
-      await this.pushHand(p);
     }
+    await Promise.all(this.players.map(p => this.pushHand(p)));
     await this.push();
     this.render();
     Voice.say(fill_(pick(NORA.round), {r:this.round}) + ' ' + promptSpoken(this.prompt), () => {
@@ -1493,10 +1520,11 @@ const Host = {
       return;
     }
     this.banner = '';
-    // drop played cards from real hands
+    // drop played cards from real hands; they go to the discard pile for later reshuffles
     entered.forEach(p => {
       if(!p.sim) this.hands[p.id] = (this.hands[p.id]||[]).filter(c => c !== p.card);
     });
+    this.toss(entered.map(p => p.card));
     const bundle = shuffle(entered.map(p => ({card:p.card, pid:p.id, name:p.name})));
     this.subs = bundle.map(b => ({card:b.card}));
     this.owners = bundle.map(b => ({pid:b.pid, name:b.name}));
@@ -1525,7 +1553,7 @@ const Host = {
     this.revealed++;
     this.render();
     const n = idx + 1;
-    const aside = Math.random() < 0.18 ? ' ' + pick(NORA.aside) : '';
+    const aside = (this.subs.length <= 12 && Math.random() < 0.18) ? ' ' + pick(NORA.aside) : '';
     Voice.say('Number ' + n + '. ' + promptSpoken(this.prompt, this.subs[idx].card) + aside, () => this.revealNext(), 'reveal');
   },
 
@@ -1685,7 +1713,7 @@ const Host = {
         : '<div class="prompt"><p class="prompt-text">' + promptHTML(this.prompt) + '</p></div>';
       const btn = this.phase === 'REVEAL' ? adv('Skip to voting', true)
         : (this.phase === 'VOTE' ? adv('Close voting', this.players.some(p => p.vote != null)) : adv('Next round', true));
-      return head + '<div class="reveal-row">' + rows + '</div>' + btn;
+      return head + '<div class="reveal-row' + (this.subs.length > 10 ? ' many' : '') + '">' + rows + '</div>' + btn;
     }
     return '';
   },
@@ -1744,7 +1772,13 @@ const Player = {
 
   loop(){
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.tick(), 2100);
+    // 26 phones polling a free Cloudflare Worker adds up; back off when the
+    // room is big and when Nora is talking (REVEAL / RESULT) and no input is needed
+    const s = this.state || {};
+    const n = (s.players || []).length;
+    const idle = (s.phase === 'REVEAL' || s.phase === 'RESULT' || s.phase === 'GAMEOVER');
+    const wait = idle ? 4500 : (n > 20 ? 3400 : (n > 12 ? 2800 : 2100));
+    this.timer = setTimeout(() => this.tick(), wait);
   },
   async tick(){
     if(this.busy){ this.loop(); return; }

@@ -132,5 +132,15 @@ new one.
 The QR code and the connection library are loaded from a CDN. If the CDN is
 blocked, the QR is skipped and the printed join link still works.
 
-Comfortable up to about a dozen players. Past that the host's polling interval
-stretches automatically and it'll feel slower.
+Comfortable up to about 26 players in one room. The host reads the whole room
+in one request per tick (parallel requests on an older relay), hands are dealt
+in parallel, and played cards recycle through a discard pile so nothing in a
+hand is ever dealt twice. Past a dozen players Nora drops her asides while
+reading cards, phones poll a little slower, and the stage shows the cards in
+two columns. Reading 26 cards aloud still takes about two minutes a round; the
+host can hit "Skip to voting" at any point.
+
+One thing to watch with a big room: the relay runs on Cloudflare's free plan,
+which allows 100,000 requests a day. 26 phones polling every 3–4 seconds plus
+the host is roughly 30,000 requests an hour, so a single evening's game is fine
+but two long back-to-back sessions could brush the limit.
