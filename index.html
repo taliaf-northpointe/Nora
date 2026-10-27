@@ -136,6 +136,13 @@
     padding:clamp(28px,4vw,52px);
     box-shadow:0 34px 70px -34px rgba(0,0,0,.75);
   }
+  .timer{font-size:46px;font-weight:900;line-height:1;color:var(--glow);font-variant-numeric:tabular-nums;letter-spacing:-.02em;display:flex;align-items:baseline;gap:10px;justify-content:center}
+  .timer small{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .timer.low{color:#ff6b6b;animation:tick 1s steps(1) infinite}
+  @keyframes tick{50%{opacity:.55}}
+  .pv-timer{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:12px;background:rgba(127,163,176,.14);font-size:14px;color:#cfe1e8}
+  .pv-timer b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--glow)}
+  .pv-timer.low b{color:#ff6b6b}
   .prompt-text{
     font-size:clamp(28px,4.4vw,62px);font-weight:900;letter-spacing:-.03em;line-height:1.06;
     margin:0;color:#fff;
@@ -492,7 +499,8 @@
       <li>You'll never be dealt the same card twice in a game.</li>
       <li>You can swap your whole hand twice per game, before you've played a card that round.</li>
       <li>The game runs a set number of rounds. Highest score at the end takes it.</li>
-      <li>Wandered off? The host can close a round without you, so nobody waits on one phone.</li>
+      <li>You get 30 seconds to play a card and 30 seconds to vote. When the clock runs out the round moves on without you.</li>
+      <li>Wandered off? The host can also close a round early, so nobody waits on one phone.</li>
     </ul>
     <div class="help-foot">
       <button class="btn" id="help-ok" type="button">Got it</button>
@@ -811,6 +819,7 @@ const PROMPTS = lines(DECK_PROMPTS);
 const ANSWERS = lines(DECK_ANSWERS);
 const HAND_SIZE = 5;
 const SWAPS_PER_GAME = 2;     // whole-hand swaps a player gets for the entire game
+const PHASE_SECONDS = 30;     // time to pick a card / to vote before the host moves on
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 const SCREENS = ['scr-door','scr-hostsetup','scr-stage','scr-join','scr-player'];
@@ -1437,6 +1446,7 @@ const Host = {
     const state = {
       sid:this.sid, code:this.code, phase:this.phase, round:this.round, maxRounds:this.maxRounds,
       prompt:this.prompt,
+      deadline:this.deadline || null,
       players:this.players.map(p => ({id:p.id, name:p.name, score:p.score})),
       subs:this.subs.map(s => ({card:s.card})),
       revealed:this.revealed,
@@ -1572,6 +1582,7 @@ const Host = {
     if(!first) this.round++;
     this.prompt = this.promptPool.length ? this.promptPool.pop() : PROMPTS[Math.floor(Math.random()*PROMPTS.length)];
     this.phase = 'PROMPT';
+    this.startClock();
     this.subs = []; this.owners = []; this.revealed = 0; this.tally = {}; this.winner = null;
     for(const p of this.players){
       p.card = null; p.vote = null; p.active = true;
@@ -1588,6 +1599,42 @@ const Host = {
       });
       this.render();
     }, 'prompt');
+  },
+
+  /* ---- phase clock: PHASE_SECONDS to play a card / to vote, then the host moves on ---- */
+  startClock(){
+    this.stopClock();
+    this.deadline = Date.now() + PHASE_SECONDS * 1000;
+    this.warned = false;
+    this.clock = setInterval(() => this.tickClock(), 500);
+    this.tickClock();
+  },
+  stopClock(){
+    clearInterval(this.clock); this.clock = null;
+    this.deadline = null;
+    const el = $('stage-timer'); if(el) el.remove();
+  },
+  tickClock(){
+    if(!this.deadline) return;
+    const left = Math.max(0, Math.ceil((this.deadline - Date.now()) / 1000));
+    const el = $('stage-timer');
+    if(el){ el.querySelector('b').textContent = left; el.classList.toggle('low', left <= 10); }
+    if(left === 10 && !this.warned){ this.warned = true; Voice.say('Ten seconds.', null, 'aside'); }
+    if(left > 0) return;
+    // time's up: move on with whatever is in
+    if(this.phase === 'PROMPT'){
+      if(this.players.filter(p => p.card).length >= 2){ this.closeSubmissions(); }
+      else { this.deadline = Date.now() + 15000; this.warned = false; this.banner = 'Still need two cards to read. Fifteen more seconds.'; this.render(); }
+    } else if(this.phase === 'VOTE'){
+      this.closeVoting();
+    } else {
+      this.stopClock();
+    }
+  },
+  timerHTML(){
+    if(!this.deadline) return '';
+    const left = Math.max(0, Math.ceil((this.deadline - Date.now()) / 1000));
+    return '<div class="timer' + (left <= 10 ? ' low' : '') + '" id="stage-timer"><b>' + left + '</b><small>seconds</small></div>';
   },
 
   async closeSubmissions(){
@@ -1611,6 +1658,7 @@ const Host = {
     this.subs = bundle.map(b => ({card:b.card}));
     this.owners = bundle.map(b => ({pid:b.pid, name:b.name}));
     this.phase = 'REVEAL'; this.revealed = 0;
+    this.stopClock();
     await this.push();
     this.render();
     // say the question once here; each card is then read on its own
@@ -1621,6 +1669,7 @@ const Host = {
     if(this.phase !== 'REVEAL') return;
     if(this.revealed >= this.subs.length){
       this.phase = 'VOTE';
+      this.startClock();
       this.push();
       this.render();
       Voice.say(pick(NORA.vote), null, 'vote');
@@ -1661,6 +1710,7 @@ const Host = {
     if(winner) winner.score++;
     this.winner = {idx:win, card:this.subs[win].card, name:owner.name, tied:tied};
     this.phase = 'RESULT';
+    this.stopClock();
     await this.push();
     this.render();
 
@@ -1696,6 +1746,7 @@ const Host = {
   async end(){
     Voice.hush();
     clearTimeout(this.timer);
+    this.stopClock();
     if(hasStore){
       await drop(kHost(this.code));
       const keys = await listKeys('ngs:' + this.code + ':');
@@ -1772,6 +1823,7 @@ const Host = {
     }
     if(this.phase === 'PROMPT'){
       return '<div class="prompt"><p class="prompt-text">' + promptHTML(this.prompt) + '</p></div>'
+        + this.timerHTML()
         + adv('Close submissions', this.players.filter(p => p.card).length >= 2);
     }
     if(this.phase === 'REVEAL' || this.phase === 'VOTE' || this.phase === 'RESULT' || this.phase === 'GAMEOVER'){
@@ -1799,7 +1851,7 @@ const Host = {
           + (this.winner && this.winner.tied ? ' It was a tie, so I picked.' : '') + '</p>'
         : '<div class="prompt"><p class="prompt-text">' + promptHTML(this.prompt) + '</p></div>';
       const btn = this.phase === 'REVEAL' ? adv('Skip to voting', true)
-        : (this.phase === 'VOTE' ? adv('Close voting', this.players.some(p => p.vote != null)) : adv('Next round', true));
+        : (this.phase === 'VOTE' ? this.timerHTML() + adv('Close voting', this.players.some(p => p.vote != null)) : adv('Next round', true));
       return head + '<div class="reveal-row' + (this.subs.length > 10 ? ' many' : '') + '">' + rows + '</div>' + btn;
     }
     return '';
@@ -1827,7 +1879,7 @@ const Player = {
   code:'', id:'', name:'', sid:'',
   hand:[], handRound:0, handVer:0, state:null, sel:null,
   myRedraw:0, awaitingHand:false,
-  timer:null, busy:false, lastPhase:'', lastRound:0, banner:'',
+  timer:null, busy:false, lastPhase:'', lastRound:0, banner:'', clock:null,
 
   async join(code, name){
     const s = await pull(kHost(code));
@@ -1904,6 +1956,18 @@ const Player = {
     this.loop();
   },
 
+  timerHTML(s){
+    if(!s.deadline) return '';
+    const left = Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000));
+    if(!this.clock) this.clock = setInterval(() => {
+      const el = $('pv-timer'); const st = this.state || {};
+      if(!el || !st.deadline){ clearInterval(this.clock); this.clock = null; return; }
+      const l = Math.max(0, Math.ceil((st.deadline - Date.now()) / 1000));
+      el.querySelector('b').textContent = l; el.classList.toggle('low', l <= 10);
+    }, 1000);
+    return '<div class="pv-timer' + (left <= 10 ? ' low' : '') + '" id="pv-timer"><span>' + (s.phase === 'VOTE' ? 'Time to vote' : 'Time to play a card') + '</span><b>' + left + '</b></div>';
+  },
+
   async playCard(card){
     this.myCard = card;
     this.hand = this.hand.filter(c => c !== card);
@@ -1955,6 +2019,7 @@ const Player = {
             ? '<p class="tip" style="text-align:center">No hand swaps left this game.</p>'
             : '<button class="btn ghost wide" id="pv-redraw">Don’t like these? Swap your hand (' + swapsLeft + ' left this game)</button>');
       body.innerHTML = '<div class="pv-prompt">' + promptHTML(s.prompt) + '</div>'
+        + this.timerHTML(s)
         + '<p class="pv-instruction">Pick a card to fill in the blank.</p>'
         + '<div class="hand">' + this.hand.map((c,i) =>
             '<button data-card="' + i + '"' + (this.awaitingHand ? ' disabled' : '') + ' class="' + (this.sel === i ? 'sel' : '') + '">' + esc(c) + '</button>'
@@ -1992,6 +2057,7 @@ const Player = {
         return;
       }
       body.innerHTML = '<div class="pv-prompt">' + promptHTML(s.prompt) + '</div>'
+        + this.timerHTML(s)
         + '<p class="pv-instruction">Vote for the best one. Your own card is greyed out.</p>'
         + '<div class="hand">' + subs.map((x,i) => {
             const mine = this.myCard && x.card === this.myCard;
@@ -2063,6 +2129,7 @@ const Help = {
     "Each round I read a question with a blank in it. You have five cards. Tap the funniest one, then tap Play this card.",
     "Once everyone has played, I read all the answers out loud.",
     "Then you vote for your favourite. Not your own. I'm watching.",
+    "You get thirty seconds to play a card, and thirty to vote. When the clock runs out, we move on without you.",
     "Most votes wins the round and a point. The card you played is replaced straight away, and you can swap your whole hand twice per game.",
     "Highest score when the rounds run out takes it. That's it. Let's play."
   ],

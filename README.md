@@ -79,8 +79,11 @@ elsewhere Nora falls back to the best British or Australian voice installed.
 **Add practice player** in the host toolbar drops in a bot that submits and
 votes on its own, so you can test the whole loop alone first.
 
-**Close submissions**, **Close voting** and **Skip to voting** are always
-available, so a phone that wandered off can never stall the game.
+Players get **30 seconds** to play a card and 30 to vote (a countdown shows on
+the stage and on every phone; Nora calls "ten seconds"). When it runs out the
+host moves on with whatever is in. **Close submissions**, **Close voting** and
+**Skip to voting** are always available too, so a phone that wandered off can
+never stall the game.
 
 ---
 
