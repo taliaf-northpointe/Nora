@@ -575,6 +575,15 @@ My favorite rapper is Lil ___.
 Run, don’t walk. The girlies have discovered ___.
 Don’t forget to like, subscribe and smash that ___ button!
 Can we please normalize ___?
+___: Achievement unlocked.
+Feeling so grateful! #amazing #mylife #___
+Oh no! Siri, how do I fix ___?
+I get by with a little help from ___.
+What’s my secret power? ___.
+Next on ESPN2: The World Series of ___.
+Google Calendar alert: ___ in 10 minutes.
+___. That was so metal.
+I don’t mean to brag, but they call me the Michael Jordan of ___.
 `;
 
 const DECK_ANSWERS = `
@@ -1405,7 +1414,9 @@ const SPEAK_FIXES = [
   // voice guesses the past-tense "red" — spell it the way it should sound
   [/\b(r)ead\b/gi, function(m, r){ return r + 'eed'; }],
   // the card reads "Sahur"; the voice says it best spelled "saw-hoor"
-  [/\bSahur\b/g, 'saw-hoor']
+  [/\bSahur\b/g, 'saw-hoor'],
+  // '#amazing' should be said 'hashtag amazing', not 'number amazing'
+  [/#(?=\w)/g, 'hashtag ']
 ];
 function speakFix(s){ SPEAK_FIXES.forEach(function(f){ s = s.replace(f[0], f[1]); }); return s; }
 function promptSpoken(text, fill){
