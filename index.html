@@ -873,11 +873,10 @@ const HAND_SIZE = 5;
 const SWAPS_PER_GAME = 2;     // whole-hand swaps a player gets for the entire game
 const PHASE_SECONDS = 30;     // time to pick a card / to vote before the host moves on
 
-// Host cards that are guaranteed to come up in every game; the rest of the
-// rounds are drawn at random from the remaining prompts.
+// Host card guaranteed to come up in every game; every other round is drawn
+// at random from the remaining prompts.
 const MUST_PLAY_PROMPTS = [
-  'Time to put on my favorite t-shirt, the one that says "I heart ___."',
-  'Maybe the real ___ was the friends we made along the way.'
+  'Time to put on my favorite t-shirt, the one that says "I heart ___."'
 ];
 const normPrompt = t => String(t).replace(/[\u201c\u201d]/g, '"').replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').trim().toLowerCase();
 
