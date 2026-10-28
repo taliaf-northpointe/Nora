@@ -3,7 +3,7 @@
 A fill-in-the-blank party game for the team. One person hosts on a shared
 screen, everyone else plays from their phone. Nora reads every card out loud.
 
-**Play it:** https://taliaf-northpointe.github.io/Nora/
+**Play it:** https://taliatfrazier.github.io/cards-against-it/
 
 Everything is one file. `index.html` holds the game, the deck, the styling and
 Nora's avatar — no build step, no dependencies, nothing to install.

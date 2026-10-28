@@ -14,7 +14,8 @@
 // Only these sites may use the relay from a browser (Origin can't be spoofed
 // by a browser). Add your own domain here if you serve the game elsewhere.
 const ALLOW_ORIGINS = [
-  'https://taliaf-northpointe.github.io',
+  'https://taliatfrazier.github.io',      // personal GitHub Pages (current home)
+  'https://taliaf-northpointe.github.io', // old Northpointe org Pages
   'http://localhost:8471',
   'http://127.0.0.1:8471'
 ];
