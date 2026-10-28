@@ -1,0 +1,3 @@
+
+# local proxy root certificate for wrangler (machine-specific, never commit)
+relay/.proxy-ca.pem
