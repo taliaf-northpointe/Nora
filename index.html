@@ -838,6 +838,7 @@ The Force
 Lunchables
 Hipsters
 Unlimited soup, salad, and breadsticks
+Carrying the weight of being the family wifi password
 `;
 </script>
 <script>
@@ -854,6 +855,29 @@ const ANSWERS = lines(DECK_ANSWERS);
 const HAND_SIZE = 5;
 const SWAPS_PER_GAME = 2;     // whole-hand swaps a player gets for the entire game
 const PHASE_SECONDS = 30;     // time to pick a card / to vote before the host moves on
+
+// Host cards that are guaranteed to come up in every game; the rest of the
+// rounds are drawn at random from the remaining prompts.
+const MUST_PLAY_PROMPTS = [
+  'Time to put on my favorite t-shirt, the one that says "I heart ___."',
+  'Maybe the real ___ was the friends we made along the way.'
+];
+const normPrompt = t => String(t).replace(/[\u201c\u201d]/g, '"').replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').trim().toLowerCase();
+
+/* Build the prompt pile for a game of n rounds. The pile is consumed from the
+   END (pop), so the game's n prompts sit at the end: the must-play cards mixed
+   at random among (n - must) random others. Anything left over goes underneath
+   in case the host keeps playing past n rounds. */
+function buildPromptPool(n){
+  const wanted = new Set(MUST_PLAY_PROMPTS.map(normPrompt));
+  const must = PROMPTS.filter(t => wanted.has(normPrompt(t)));
+  const rest = shuffle(PROMPTS.filter(t => !wanted.has(normPrompt(t))));
+  const take = Math.max(0, Math.min(rest.length, n - must.length));
+  const game = shuffle(rest.slice(0, take).concat(must));
+  const leftover = rest.slice(take);
+  if(must.length < MUST_PLAY_PROMPTS.length) console.warn('[Nora] a must-play prompt is missing from the deck');
+  return leftover.concat(game);
+}
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 const SCREENS = ['scr-door','scr-hostsetup','scr-stage','scr-join','scr-player'];
@@ -1613,8 +1637,8 @@ const Host = {
   async startGame(){
     if(this.players.length < 2){ return; }
     this.maxRounds = parseInt($('set-target').value, 10) || 30;
-    // fresh random order of prompts every game
-    this.promptPool = shuffle(PROMPTS.slice());
+    // fresh random order every game, with the must-play prompts guaranteed inside the round count
+    this.promptPool = buildPromptPool(this.maxRounds);
     await this.nextRound(true);
   },
 
@@ -1906,7 +1930,7 @@ const Host = {
     else if(this.phase === 'GAMEOVER'){
       this.players.forEach(p => p.score = 0);
       this.round = 1;
-      this.promptPool = shuffle(PROMPTS.slice());
+      this.promptPool = buildPromptPool(this.maxRounds);
       this.nextRound(true);
     }
   }
