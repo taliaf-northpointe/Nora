@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-237 cards, dealt five to a hand. The 60 host cards are a separate list
+260 cards, dealt five to a hand. The 60 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (237)
+## Cards (260)
 
 Alphabetized, ignoring a/an/the.
 
@@ -16,6 +16,7 @@ Alphabetized, ignoring a/an/the.
 - 5-7 business days
 - A 7am invite from another time zone
 - Absolutely nothing
+- Active listening
 - Aggressive eye contact
 - Aggressive optimism
 - AI slop
@@ -25,7 +26,9 @@ Alphabetized, ignoring a/an/the.
 - Astrology girls
 - The audacity
 - Aura Farming
+- Axe Body Spray
 - Bad financial decisions
+- Batman
 - Being locked out of the thing I built
 - Being right at the wrong time
 - Being seen typing and then not sending
@@ -52,6 +55,7 @@ Alphabetized, ignoring a/an/the.
 - A concerning lack of supervision
 - The consequences of my actions
 - A cookie tin containing only wrappers
+- Corporate America
 - Costco
 - A Costco-sized jar of pickles
 - Creating an automated solution to a problem that would have taken 30 seconds to fix manually
@@ -74,17 +78,23 @@ Alphabetized, ignoring a/an/the.
 - An Emotional Support Water Bottle
 - An entire personality built on one certification
 - The entire state of Florida
+- Exactly what you’d expect
 - Eye contact held two seconds too long
 - A Facebook mom group
 - False confidence
 - A file named final_FINAL_v7
 - A firm handshake and nothing else
+- Flightless birds
+- The Force
 - A Fortnite skin
+- Free samples
 - Gardening
+- Geese
 - Generational trauma
 - A “Get Ready With Me” TikTok
 - Getting absolutely cooked
 - Getting stuck in a revolving door
+- Ghosts
 - A Git merge conflict
 - A GoFundMe
 - Going to Target for one thing
@@ -97,6 +107,7 @@ Alphabetized, ignoring a/an/the.
 - The guy who won’t stop explaining crypto
 - Guys who peaked in a fraternity
 - An HDMI cable that only works upside down
+- Hipsters
 - The HOA
 - A hobby I did for two weeks
 - Holding a door open for far too long
@@ -113,6 +124,8 @@ Alphabetized, ignoring a/an/the.
 - Introducing myself twice to the same person
 - Jeep owners
 - Jimothy the Raccoon
+- The Kardashians
+- Karen
 - A laptop held together by hope
 - The last chip in the bag
 - The last functioning brain cell
@@ -125,6 +138,7 @@ Alphabetized, ignoring a/an/the.
 - Line dancing
 - LinkedIn influencers
 - A little treat
+- Lunchables
 - Main Character Energy
 - Making a spreadsheet for something that didn’t need a spreadsheet
 - Making it everyone’s problem
@@ -140,6 +154,7 @@ Alphabetized, ignoring a/an/the.
 - My grand plans for the weekend
 - My last nerve
 - My self-care era
+- My Uber driver
 - Mystery meat
 - The nearest Taco Bell
 - Negative aura
@@ -147,6 +162,7 @@ Alphabetized, ignoring a/an/the.
 - No thoughts, just vibes
 - Nobody knowing who owns this
 - Nodding as though I understand
+- A non-disclosure agreement
 - A notification from your Apple Watch telling you it’s time to stand up
 - A novelty tie
 - NPC behavior
@@ -162,6 +178,7 @@ Alphabetized, ignoring a/an/the.
 - The person who never left the meeting
 - Pickleball
 - A playground
+- Poor life choices
 - A poorly coordinated TikTok dance
 - Pressing Reply instead of Forward
 - Pretending to read the terms
@@ -195,6 +212,7 @@ Alphabetized, ignoring a/an/the.
 - A sensible decision, made two years late
 - A shared mailbox nobody owns
 - Sharing the wrong window
+- Shiny objects
 - A side quest
 - The silence after a question nobody wants to answer
 - Singing the wrong lyrics with total confidence
@@ -203,6 +221,7 @@ Alphabetized, ignoring a/an/the.
 - Small talk in an elevator
 - Snoop Dogg
 - A snow globe of somewhere terrible
+- Some guy
 - Somebody else’s problem
 - Someone else’s undocumented script
 - Someone who brought their own measuring tape
@@ -216,6 +235,7 @@ Alphabetized, ignoring a/an/the.
 - A suspicious amount of mayonnaise
 - A suspiciously specific Google search
 - A suspiciously warm laptop
+- Switching to Geico
 - Taylor Swift
 - A Teams message that just says “Hi!”
 - Tegridy Farms
@@ -229,11 +249,13 @@ Alphabetized, ignoring a/an/the.
 - Touching grass
 - Trader Joe’s
 - Tripping and pretending it was on purpose
+- The true meaning of Christmas
 - Tung Tung Tung Sahur
 - Turning it off and on again
 - Twelve people and one decision
 - Two hours of talking around the actual problem
 - Two raccoons in a trench coat
+- Unlimited soup, salad, and breadsticks
 - Unresolved childhood trauma
 - Vegans
 - The version of me that answers emails
@@ -246,4 +268,5 @@ Alphabetized, ignoring a/an/the.
 - Watching documentaries about extremely specific topics
 - Waving at someone who was not waving at me
 - Wearing socks with sandals
+- The wifi password
 - World of Warcraft
