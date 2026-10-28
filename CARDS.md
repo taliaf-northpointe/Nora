@@ -1,6 +1,6 @@
 # Nora Game Show - player cards
 
-261 cards, dealt five to a hand. The 66 host cards are a separate list
+261 cards, dealt five to a hand. The 68 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
