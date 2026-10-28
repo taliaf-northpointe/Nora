@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-238 cards, dealt five to a hand. The 60 host cards are a separate list
+237 cards, dealt five to a hand. The 60 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (238)
+## Cards (237)
 
 Alphabetized, ignoring a/an/the.
 
@@ -97,7 +97,6 @@ Alphabetized, ignoring a/an/the.
 - The guy who won’t stop explaining crypto
 - Guys who peaked in a fraternity
 - An HDMI cable that only works upside down
-- Hello Kitty Island Adventure
 - The HOA
 - A hobby I did for two weeks
 - Holding a door open for far too long
