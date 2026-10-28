@@ -1,12 +1,12 @@
 # Nora Game Show - player cards
 
-261 cards, dealt five to a hand. The 68 host cards are a separate list
+267 cards, dealt five to a hand. The 68 host cards are a separate list
 in the same file.
 
 To edit: open `index.html`, find `const DECK_ANSWERS`, add or
 remove lines. One card per line. No quotes or commas needed.
 
-## Cards (261)
+## Cards (267)
 
 Alphabetized, ignoring a/an/the.
 
@@ -22,6 +22,7 @@ Alphabetized, ignoring a/an/the.
 - AI slop
 - An AI-generated apology
 - The algorithm
+- All these decorative pillows
 - Asking Claude to write the apology for what Claude did
 - Astrology girls
 - The audacity
@@ -51,6 +52,7 @@ Alphabetized, ignoring a/an/the.
 - Claude explaining something nobody asked about
 - Claude with no adult supervision
 - Cleaning as a form of procrastination
+- Climbing a telephone pole and becoming one with the T-Mobile network
 - A comment that says do not touch this
 - A concerning amount of duct tape
 - A concerning lack of supervision
@@ -89,10 +91,11 @@ Alphabetized, ignoring a/an/the.
 - The Force
 - A Fortnite skin
 - Free samples
+- Gandalf
 - Gardening
 - Geese
+- Generally having no idea what’s going on
 - Generational trauma
-- A “Get Ready With Me” TikTok
 - Getting absolutely cooked
 - Getting stuck in a revolving door
 - Ghosts
@@ -134,8 +137,8 @@ Alphabetized, ignoring a/an/the.
 - Laughing at the wrong moment
 - A lava lamp
 - A legally questionable solution
-- “Let’s take this offline.”
 - Letting the intrusive thoughts win
+- “Let’s take this offline.”
 - Line dancing
 - LinkedIn influencers
 - A little treat
@@ -181,6 +184,7 @@ Alphabetized, ignoring a/an/the.
 - A playground
 - Poor life choices
 - A poorly coordinated TikTok dance
+- A positive attitude!
 - Pressing Reply instead of Forward
 - Pretending to read the terms
 - A printer error from 2007
@@ -192,6 +196,7 @@ Alphabetized, ignoring a/an/the.
 - Raw enthusiasm and no skills whatsoever
 - Reading the room and ignoring it
 - Realizing it halfway through
+- A really cool hat
 - Rearranging the furniture at 2am
 - A recurring meeting nobody can cancel
 - Replying to a text three weeks later
@@ -271,3 +276,4 @@ Alphabetized, ignoring a/an/the.
 - Wearing socks with sandals
 - The wifi password
 - World of Warcraft
+- A “Get Ready With Me” TikTok
